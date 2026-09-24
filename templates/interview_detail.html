@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Interview - {{ interview.candidate.name }} - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <a href="{{ url_for('interviews') }}" class="text-secondary me-2"><i class="bi bi-arrow-left"></i> Back to Interviews</a>
+    <h2 class="mt-1">Interview Details</h2>
+    <p>{{ interview.candidate.name }} - {{ interview.round_type }}</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card-dashboard">
+            <div class="card-body-custom text-center">
+                <div class="candidate-avatar-lg {{ interview.candidate.avatar_color }}">{{ interview.candidate.name|get_initials }}</div>
+                <h5 class="mt-3 mb-1">{{ interview.candidate.name }}</h5>
+                <p class="text-secondary mb-2">{{ interview.candidate.position }}</p>
+                {% set ibadge = {'Scheduled':'badge-interview','Completed':'badge-completed','Cancelled':'badge-rejected'} %}
+                <span class="badge-custom {{ ibadge.get(interview.status,'badge-review') }}" style="font-size:14px;padding:6px 20px;">{{ interview.status }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-info-circle me-2" style="color:var(--primary-blue)"></i> Interview Information</h5></div>
+            <div class="card-body-custom">
+                <div class="row g-3">
+                    <div class="col-sm-6"><label class="text-secondary small">Date</label><p class="fw-semibold">{{ interview.date.strftime('%d %B %Y') if interview.date else '-' }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Time</label><p class="fw-semibold">{{ interview.time }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Interviewer</label><p class="fw-semibold">{{ interview.interviewer }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Round</label><p class="fw-semibold">{{ interview.round_type }}</p></div>
+                    <div class="col-12"><label class="text-secondary small">Meeting Link</label>
+                        <p>{% if interview.meet_link %}<a href="{{ interview.meet_link }}" target="_blank" class="btn btn-primary-custom btn-sm"><i class="bi bi-camera-video"></i> Join Meeting</a>{% else %}-{% endif %}</p>
+                    </div>
+                </div>
+
+                <h6 class="mt-3 mb-2">Reminder Status</h6>
+                {% set reminders = [
+                    ('24-hour reminder', interview.reminder_24h),
+                    ('1-hour reminder', interview.reminder_1h),
+                    ('10-minute reminder', interview.reminder_10m)
+                ] %}
+                {% for label, sent in reminders %}
+                <div class="reminder-item {{ 'sent' if sent else 'pending' }}">
+                    <i class="bi bi-{{ 'check-circle-fill' if sent else 'clock-fill' }}"></i>
+                    <span>{{ label }}</span>
+                    <span class="reminder-badge {{ 'sent' if sent else 'pending' }}">{{ '✓ Sent' if sent else 'Pending' }}</span>
+                </div>
+                {% endfor %}
+
+                <h6 class="mt-3 mb-2">Candidate Feedback</h6>
+                {% if interview.feedback %}
+                <div class="alert alert-info small mb-3">
+                    <i class="bi bi-chat-dots me-2"></i>{{ interview.feedback }}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('submit_feedback', id=interview.id) }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6>Overall Recommendation</h6>
+                            <select name="recommendation" class="form-select">
+                                <option value="Strongly Hire" {% 'selected' if interview.recommendation == 'Strongly Hire' %}>Strongly Hire</option>
+                                <option value="Hire" {% 'selected' if interview.recommendation == 'Hire' %}>Hire</option>
+                                <option value="Maybe" {% 'selected' if interview.recommendation == 'Maybe' %}>Maybe</option>
+                                <option value="No Hire" {% 'selected' if interview.recommendation == 'No Hire' %}>No Hire</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Communication <span class="text-secondary small">(1-5)</span></h6>
+                            <input type="number" name="communication" min="1" max="5" value="{{ interview.communication or 3 }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Technical Skill <span class="text-secondary small">(1-5)</span></h6>
+                            <input type="number" name="technical_skill" min="1" max="5" value="{{ interview.technical_skill or 3 }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Problem Solving <span class="text-secondary small">(1-5)</span></h6>
+                            <input type="number" name="problem_solving" min="1" max="5" value="{{ interview.problem_solving or 3 }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Cultural Fit <span class="text-secondary small">(1-5)</span></h6>
+                            <input type="number" name="cultural_fit" min="1" max="5" value="{{ interview.cultural_fit or 3 }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-12">
+                            <h6>Comments</h6>
+                            <textarea name="feedback" class="form-control form-control-sm" rows="3">{{ interview.feedback or '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary-custom"><i class="bi bi-send me-2"></i> Submit Feedback</button>
+                        <a href="{{ url_for('interviews') }}" class="btn btn-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

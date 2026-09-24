@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}VCT Detail - {{ record.candidate.name }} - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <a href="{{ url_for('vct') }}" class="text-secondary me-2"><i class="bi bi-arrow-left"></i> Back to VCT</a>
+        <h2 class="mt-1">Document Verification</h2>
+        <p>{{ record.candidate.name }} - {{ record.document_type }}</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-5">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-file-earmark-text me-2" style="color:var(--primary-blue)"></i> Uploaded Document</h5></div>
+            <div class="card-body-custom text-center">
+                <div class="document-preview-placeholder">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <p class="mt-2 fw-semibold">{{ record.document_type }}</p>
+                    <p class="text-secondary small">{{ record.candidate.name }}_{{ record.document_type }}.pdf</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-info-circle me-2" style="color:var(--primary-blue)"></i> Extracted Information</h5></div>
+            <div class="card-body-custom">
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6"><label class="text-secondary small">Name</label><p class="fw-semibold">{{ record.candidate.name }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">College</label><p class="fw-semibold">{{ record.candidate.college or 'N/A' }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Degree</label><p class="fw-semibold">{{ record.candidate.degree or 'N/A' }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">CGPA</label><p class="fw-semibold">{{ record.candidate.cgpa or 'N/A' }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Backlogs</label><p class="fw-semibold">{{ record.candidate.backlogs or 'None' }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">OCR Confidence</label><p class="fw-semibold" style="color:{{ 'var(--success)' if record.ocr_confidence >= 85 else 'var(--warning)' if record.ocr_confidence >= 70 else 'var(--danger)' }}">{{ record.ocr_confidence }}%</p></div>
+                </div>
+
+                <h6 class="mb-2">Verification Checks</h6>
+                {% set checks = [
+                    ('Name matched', record.name_matched),
+                    ('DOB matched', record.dob_matched),
+                    ('CGPA verified', record.cgpa_verified),
+                    ('Eligibility passed', record.eligibility_passed)
+                ] %}
+                {% for label, passed in checks %}
+                <div class="verification-check {{ 'pass' if passed else 'fail' }}">
+                    <i class="bi bi-{{ 'check-circle-fill' if passed else 'x-circle-fill' }}"></i>
+                    <span>{{ label }}</span>
+                    <span class="check-badge {{ 'pass' if passed else 'fail' }}">{{ '✓' if passed else '✗' }}</span>
+                </div>
+                {% endfor %}
+
+                {% if record.discrepancy %}
+                <div class="alert alert-warning mt-3 mb-0 py-2 small">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Discrepancy Detected:</strong> {{ record.discrepancy }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-dashboard mt-3">
+            <div class="card-body-custom">
+                <h6 class="mb-3">Actions</h6>
+                <div class="d-flex gap-2">
+                    <form method="POST" action="{{ url_for('vct_action', id=record.id) }}">
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('vct_action', id=record.id) }}">
+                        <input type="hidden" name="action" value="flag">
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-flag"></i> Flag</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('vct_action', id=record.id) }}">
+                        <input type="hidden" name="action" value="request_review">
+                        <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat"></i> Request Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

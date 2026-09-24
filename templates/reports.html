@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Reports - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Reports</h2>
+        <p>Analytics and insights for your recruitment process.</p>
+    </div>
+    <a href="{{ url_for('export_csv') }}" class="btn btn-outline-custom"><i class="bi bi-download"></i> Export CSV</a>
+</div>
+
+<div class="report-metrics">
+    <div class="report-metric"><div class="metric-value" style="color:var(--primary-blue);">{{ stats.total_candidates }}</div><div class="metric-label">Applications</div></div>
+    <div class="report-metric"><div class="metric-value" style="color:var(--success);">{{ stats.shortlisted }}</div><div class="metric-label">Shortlisted</div></div>
+    <div class="report-metric"><div class="metric-value" style="color:var(--purple);">{{ stats.selected }}</div><div class="metric-label">Selected</div></div>
+    <div class="report-metric"><div class="metric-value" style="color:var(--success);">{{ stats.joined }}</div><div class="metric-label">Joined</div></div>
+    <div class="report-metric"><div class="metric-value" style="color:var(--warning);">{{ stats.assessment_pass }} / {{ stats.assessment_pass + stats.assessment_fail }}</div><div class="metric-label">Assessment Pass Rate</div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-graph-up me-2" style="color:var(--primary-blue)"></i> Monthly Applications</h5></div>
+            <div class="card-body-custom"><canvas id="monthlyChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-diagram-3-fill me-2" style="color:var(--primary-blue)"></i> Stage Distribution</h5></div>
+            <div class="card-body-custom"><canvas id="stageChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-shield-check me-2" style="color:var(--primary-blue)"></i> Verification Rate</h5></div>
+            <div class="card-body-custom"><canvas id="vctChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-trophy-fill me-2" style="color:var(--primary-blue)"></i> Assessment Performance</h5></div>
+            <div class="card-body-custom"><canvas id="assessmentChart" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/applications-monthly').then(r=>r.json()).then(data => {
+        new Chart(document.getElementById('monthlyChart'), {type:'bar',data:{labels:data.map(d=>d.month),datasets:[{label:'Applications',data:data.map(d=>d.count),backgroundColor:'#2563EB',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#E5E7EB'}},x:{grid:{display:false}}}}});
+    });
+    new Chart(document.getElementById('stageChart'), {type:'doughnut',data:{labels:[{% for s in stages_data %}'{{ s[0] }}',{% endfor %}],datasets:[{data:[{% for s in stages_data %}{{ s[1] }},{% endfor %}],backgroundColor:['#2563EB','#9333EA','#EA580C','#0891B2','#DC2626','#16A34A','#D97706','#6B7280']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    new Chart(document.getElementById('vctChart'), {type:'doughnut',data:{labels:['Verified','Pending Review','Flagged'],datasets:[{data:[{{ stats.pending_verification }},{{ stats.ocr_flags }},{{ stats.pending_verification - stats.ocr_flags }}],backgroundColor:['#16A34A','#D97706','#DC2626']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    new Chart(document.getElementById('assessmentChart'), {type:'bar',data:{labels:['Passed','Failed'],datasets:[{label:'Count',data:[{{ stats.assessment_pass }},{{ stats.assessment_fail }}],backgroundColor:['#16A34A','#DC2626'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+});
+</script>
+{% endblock %}

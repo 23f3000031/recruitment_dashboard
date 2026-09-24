@@ -1,0 +1,68 @@
+=== RECRUITPRO ADMIN PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Admin Panel - Complete system management interface for HR Administrators.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: admin@recruitpro.com / admin123
+- Role: Administrator (full access to all features)
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View complete recruitment pipeline metrics
+   - KPIs: Total candidates, pending verification, interviews today, selected candidates
+   - Real-time statistics and alerts
+
+2. USER MANAGEMENT
+   - Add new users (Recruiter, Interviewer roles)
+   - Reset user passwords
+   - Enable/disable user accounts
+   - Delete users (except own account)
+   - View all system users with roles and last login
+
+3. COMPLETE ACCESS TO ALL FEATURES
+   - Candidates: Full CRUD (Create, Read, Update, Delete)
+   - VCT Verification: View and manage document verification
+   - Queues: View recruitment pipeline stages
+   - Assessments: Assign and track assessments
+   - Interviews: Schedule, manage, and view all interviews
+   - Documents: Generate and download all documents
+   - Resume Formatter: Access resume formatting tools
+   - Reports: View comprehensive analytics
+   - Settings: Configure system settings
+   - Jobs: Create and manage job postings
+   - Calendar: View interview calendar
+   - Advanced Analytics: Funnel conversion and time-to-hire
+
+4. SYSTEM CONFIGURATION
+   - SMTP email settings configuration
+   - User role management
+   - System preferences
+   - Audit log viewing
+
+5. DATA EXPORT
+   - CSV export of candidates
+   - PDF document downloads
+   - Analytics data export
+
+NAVIGATION:
+- Full sidebar access visible to admin
+- All menu items available
+- Settings section for system configuration
+- Users management section
+
+FLASH MESSAGES:
+- Welcome back notifications
+- Action confirmation messages
+- Error notifications for invalid operations
+- Success messages for completed tasks
+
+USE CASES:
+- HR Administrator managing entire recruitment process
+- Creating and managing user accounts
+- Configuring system settings
+- Generating system reports
+- Managing all candidate data
+- Overseeing complete hiring pipeline

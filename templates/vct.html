@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}VCT Verification - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h2>VCT Verification</h2>
+    <p>Review OCR-extracted candidate information and document verification status.</p>
+</div>
+
+<div class="card-dashboard mb-4">
+    <div class="card-body-custom">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search candidate..." value="{{ search }}">
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('vct') }}" class="btn {{ 'btn-primary-custom' if not status_filter else 'btn-outline-custom' }} btn-sm">All</a>
+                    <a href="{{ url_for('vct') }}?status=Pending Review" class="btn {{ 'btn-primary-custom' if status_filter == 'Pending Review' else 'btn-outline-custom' }} btn-sm">Pending Review</a>
+                    <a href="{{ url_for('vct') }}?status=Verified" class="btn {{ 'btn-primary-custom' if status_filter == 'Verified' else 'btn-outline-custom' }} btn-sm">Verified</a>
+                    <a href="{{ url_for('vct') }}?status=Flagged" class="btn {{ 'btn-primary-custom' if status_filter == 'Flagged' else 'btn-outline-custom' }} btn-sm">Flagged</a>
+                    <a href="{{ url_for('vct') }}?status=Eligibility Failed" class="btn {{ 'btn-primary-custom' if status_filter == 'Eligibility Failed' else 'btn-outline-custom' }} btn-sm">Eligibility Failed</a>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary-custom w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-shield-check me-2" style="color:var(--primary-blue)"></i> VCT Records</h5>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive-custom">
+            <table class="table table-recruitment">
+                <thead><tr><th>Candidate</th><th>Document</th><th>Extracted Data</th><th>OCR Confidence</th><th>Eligibility</th><th>Status</th><th style="width:80px;">Action</th></tr></thead>
+                <tbody>
+                    {% if records %}
+                    {% for r in records %}
+                    <tr>
+                        <td><div class="candidate-cell"><span class="candidate-avatar {{ r.candidate.avatar_color }}">{{ r.candidate.name|get_initials }}</span><span class="candidate-name">{{ r.candidate.name }}</span></div></td>
+                        <td>{{ r.document_type }}</td>
+                        <td style="max-width:200px;"><span class="text-wrap">{{ r.extracted_data }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress ocr-progress"><div class="progress-bar {{ 'bg-success' if r.ocr_confidence >= 85 else 'bg-warning' if r.ocr_confidence >= 70 else 'bg-danger' }}" style="width:{{ r.ocr_confidence }}%"></div></div>
+                                <span style="font-weight:600;{{ 'color:var(--success)' if r.ocr_confidence >= 85 else 'color:var(--warning)' if r.ocr_confidence >= 70 else 'color:var(--danger)' }}">{{ r.ocr_confidence }}%</span>
+                            </div>
+                            {% if r.ocr_confidence < 85 %}<div class="small text-warning mt-1"><i class="bi bi-exclamation-triangle"></i> Manual Review Required</div>{% endif %}
+                        </td>
+                        <td>{% set e_badge = {'Eligible':'badge-completed','Not Eligible':'badge-rejected','Pending':'badge-review'} %}<span class="badge-custom {{ e_badge.get(r.eligibility,'badge-review') }}">{{ r.eligibility }}</span></td>
+                        <td>{% set v_badge_map = {'Verified':'badge-completed','Pending Review':'badge-review','Flagged':'badge-rejected'} %}<span class="badge-custom {{ v_badge_map.get(r.verification_status,'badge-review') }}">{{ r.verification_status }}</span></td>
+                        <td><a href="{{ url_for('vct_detail', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr><td colspan="7" class="text-center py-4 text-secondary">No VCT records found</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

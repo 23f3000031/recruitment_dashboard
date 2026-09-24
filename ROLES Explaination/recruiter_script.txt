@@ -1,0 +1,83 @@
+=== RECRUITPRO RECRUITER PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Recruiter Panel - Recruitment management interface for hiring managers and recruiters.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: recruiter@recruitpro.com / recruiter123
+- Role: Recruiter (limited access vs Administrator)
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View recruitment KPIs relevant to recruiters
+   - Metrics: Total candidates, pending verification, interviews today, selected candidates
+   - Quick action shortcuts for common tasks
+
+2. CANDIDATE MANAGEMENT
+   - View candidate profiles and details
+   - Search and filter candidates by name, position, status
+   - Add new candidates to the system
+   - Edit candidate information
+   - Move candidates between pipeline stages
+   - View candidate verification status (Verified/Pending/Flagged)
+
+3. RECRUITER-SPECIFIC FEATURES:
+   - View and manage VCT verification queue
+   - Assign assessments to candidates
+   - Schedule interviews with panel members
+   - Generate offer letters and documents
+   - View candidate pipeline stages
+   - Access resume formatter
+   - View interview schedules
+
+4. RECRUITER LIMITATIONS (vs Admin):
+   - Cannot add/manage other users
+   - Cannot configure system settings
+   - Cannot delete candidates (only move stages)
+   - Cannot access settings menu
+   - Cannot manage job postings (unless created by them)
+   - Cannot access advanced analytics fully
+
+5. QUICK ACTIONS:
+   - Review VCT verification queue
+   - Add new candidates
+   - Assign assessments
+   - Schedule interviews
+   - View recent candidates
+
+NAVIGATION:
+- Sidebar shows: Dashboard, Candidate Profiles, VCT Verification, Recruitment Queue, Assessments, Coding Sandbox, Interview Schedule, Generated Documents, Resume Formatter, Reports
+- Settings link NOT visible
+- User management NOT available
+
+FLASH MESSAGES:
+- Action confirmations (candidate added, assessment assigned)
+- Error messages for invalid operations
+- Success notifications for completed tasks
+- Reminder notifications for pending actions
+
+USE CASES:
+- Recruiter managing day-to-day candidate operations
+- Scheduling interviews and sending invites
+- Tracking candidate progress through pipeline
+- Assigning and grading assessments
+- Generating offer letters for selected candidates
+- Viewing candidate verification status
+- Collaborating with interviewers on candidate evaluations
+
+ACCESSIBLE PAGES:
+- Dashboard, Candidates, Candidate Detail
+- VCT Verification, Queues
+- Assessments, Assign Assessment
+- Interviews, Schedule Interview
+- Documents, Generate Document
+- Resume Formatter
+- Reports (limited view)
+- Login/Register pages
+
+RESTRICTED PAGES:
+- Settings, Users Management
+- Job Posting Creation (unless already created)
+- Advanced Analytics (full version)

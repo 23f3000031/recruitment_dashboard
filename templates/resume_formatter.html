@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Resume Formatter - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Portfolio Resume Formatter</h2>
+        <p>Generate professional resumes from verified candidate profiles.</p>
+    </div>
+    <button class="btn btn-primary-custom"><i class="bi bi-file-earmark-arrow-down-fill"></i> Generate Resume</button>
+</div>
+
+<div class="row g-3 mb-4">
+    {% set templates = [
+        {'name': 'Tech / Developer', 'desc': 'Modern tech-focused layout with skills, projects, and experience highlighted.', 'icon': 'bi-laptop'},
+        {'name': 'Design / Creative', 'desc': 'Creative layout with portfolio focus, visual hierarchy, and design emphasis.', 'icon': 'bi-palette'},
+        {'name': 'Corporate / Business', 'desc': 'Professional business format with clean sections and formal structure.', 'icon': 'bi-briefcase'},
+        {'name': 'Fresher / Student', 'desc': 'Education-first layout ideal for fresh graduates and interns.', 'icon': 'bi-mortarboard'}
+    ] %}
+    {% for t in templates %}
+    <div class="col-sm-6 col-xl-3">
+        <div class="template-card">
+            <div class="template-preview">
+                <i class="bi {{ t.icon }}"></i>
+                <div class="template-name">{{ t.name }}</div>
+            </div>
+            <div class="template-body">
+                <p class="small text-secondary mb-2">{{ t.desc }}</p>
+                <button class="btn btn-primary-custom btn-sm w-100"><i class="bi bi-file-earmark"></i> Use Template</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-person-lines-fill me-2" style="color:var(--primary-blue)"></i> Candidate Resume Data</h5>
+        <span class="badge-custom badge-completed"><i class="bi bi-check-circle"></i> Auto-populated from verified profile</span>
+    </div>
+    <div class="card-body-custom">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6 class="mb-2">Education</h6>
+                <div class="resume-section">
+                    {% for c in candidates[:3] %}
+                    <div class="resume-data-item">
+                        <i class="bi bi-mortarboard-fill" style="color:var(--primary-blue)"></i>
+                        <div><div class="fw-semibold">{{ c.degree }} - {{ c.college }}</div><div class="text-secondary small">CGPA: {{ c.cgpa }} | {{ c.graduation_year }}</div></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-2">Skills</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% set all_skills = [] %}
+                    {% for c in candidates %}
+                        {% for s in c.skills.split(', ') %}
+                            {% if s not in all_skills %}{% set _ = all_skills.append(s) %}{% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% for skill in all_skills[:12] %}
+                    <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-2">Experience</h6>
+                <div class="resume-section">
+                    {% for c in candidates[:3] %}
+                    <div class="resume-data-item">
+                        <i class="bi bi-briefcase-fill" style="color:var(--primary-blue)"></i>
+                        <div><div class="fw-semibold">{{ c.position }}</div><div class="text-secondary small">{{ c.experience_years }} years | {{ c.skills[:50] }}...</div></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-2">Certifications</h6>
+                <div class="resume-section">
+                    <div class="resume-data-item">
+                        <i class="bi bi-award-fill" style="color:var(--primary-blue)"></i>
+                        <div><div class="fw-semibold">AWS Certified Developer</div><div class="text-secondary small">Amazon Web Services</div></div>
+                    </div>
+                    <div class="resume-data-item">
+                        <i class="bi bi-award-fill" style="color:var(--primary-blue)"></i>
+                        <div><div class="fw-semibold">Google Professional Data Engineer</div><div class="text-secondary small">Google Cloud</div></div>
+                    </div>
+                    <div class="resume-data-item">
+                        <i class="bi bi-award-fill" style="color:var(--primary-blue)"></i>
+                        <div><div class="fw-semibold">Meta Frontend Developer</div><div class="text-secondary small">Coursera</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Coding Sandbox - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h2>Coding Sandbox</h2>
+    <p>Write, compile and execute code in a secure isolated environment.</p>
+</div>
+
+<div class="card-dashboard mb-4">
+    <div class="card-body-custom">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h5 class="mb-1">Two Sum Problem</h5>
+                <p class="text-secondary mb-0 small">Write a function that returns indices of two numbers that add up to a target.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge-custom badge-interview"><i class="bi bi-bar-chart"></i> Difficulty: Easy</span>
+                <span class="badge-custom badge-completed"><i class="bi bi-clock"></i> 30 min</span>
+                <span class="badge-custom badge-assessment"><i class="bi bi-list-check"></i> 4 Test Cases</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-question-circle me-2" style="color:var(--primary-blue)"></i> Problem Statement</h5></div>
+            <div class="card-body-custom">
+                <p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
+                <p>You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the same element twice.</p>
+                <p>You can return the answer in any order.</p>
+                <hr>
+                <h6>Example 1:</h6>
+                <p class="small">Input: nums = [2,7,11,15], target = 9<br>Output: [0,1]<br>Explanation: nums[0] + nums[1] == 9, so return [0, 1].</p>
+                <h6>Example 2:</h6>
+                <p class="small">Input: nums = [3,2,4], target = 6<br>Output: [1,2]</p>
+                <h6>Example 3:</h6>
+                <p class="small">Input: nums = [3,3], target = 6<br>Output: [0,1]</p>
+            </div>
+        </div>
+        <div class="card-dashboard mt-3">
+            <div class="card-header-custom"><h5><i class="bi bi-list-check me-2" style="color:var(--primary-blue)"></i> Test Cases</h5></div>
+            <div class="card-body-custom">
+                <div class="test-result pass">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div><div class="fw-semibold small">Test Case 1</div><div class="text-secondary small">nums = [2,7,11,15], target = 9</div></div>
+                    <span class="result-badge pass">PASS</span>
+                </div>
+                <div class="test-result pass">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div><div class="fw-semibold small">Test Case 2</div><div class="text-secondary small">nums = [3,2,4], target = 6</div></div>
+                    <span class="result-badge pass">PASS</span>
+                </div>
+                <div class="test-result pass">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div><div class="fw-semibold small">Test Case 3</div><div class="text-secondary small">nums = [3,3], target = 6</div></div>
+                    <span class="result-badge pass">PASS</span>
+                </div>
+                <div class="test-result fail">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <div><div class="fw-semibold small">Test Case 4</div><div class="text-secondary small">nums = [1,2,3], target = 7</div></div>
+                    <span class="result-badge fail">FAIL</span>
+                </div>
+                <div class="text-center mt-3"><span class="fw-bold" style="font-size:18px;">Score: 75%</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card-dashboard">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-code-slash me-2" style="color:var(--primary-blue)"></i> Code Editor</h5>
+                <select id="sandbox-lang" class="form-select form-select-sm" style="width:auto;">
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="c++">C++</option>
+                    <option value="javascript">JavaScript</option>
+                </select>
+            </div>
+            <div class="card-body-custom p-0">
+                <div class="code-editor">
+                    <div class="code-lines">
+                        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+                    </div>
+                    <pre class="code-content"><code id="sandbox-code" contenteditable="true" spellcheck="false">def two_sum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
+
+# Test
+nums = [2, 7, 11, 15]
+target = 9
+print(two_sum(nums, target))</code></pre>
+                </div>
+            </div>
+            <div class="card-footer-custom d-flex justify-content-between">
+                <div class="d-flex gap-2">
+                    <button type="button" id="sandbox-run" class="btn btn-outline-custom btn-sm"><i class="bi bi-play-fill"></i> Run Code</button>
+                    <button type="button" id="sandbox-submit" class="btn btn-primary-custom btn-sm"><i class="bi bi-send-fill"></i> Submit</button>
+                </div>
+                <button type="button" id="sandbox-reset" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+            </div>
+            <div class="card-body-custom">
+                <div id="sandbox-output" class="alert alert-secondary small mb-0" style="white-space:pre-wrap;">Output will appear here. Your code stays saved even after refresh.</div>
+            </div>
+        </div>
+        <div class="card-dashboard mt-3">
+            <div class="card-header-custom"><h5 class="mb-0"><i class="bi bi-clock-history me-2"></i> History</h5></div>
+            <div class="card-body-custom p-0"><div id="sandbox-history" class="list-group list-group-flush small"><div class="list-group-item text-secondary">Loading...</div></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var codeEl = document.getElementById('sandbox-code');
+    var langEl = document.getElementById('sandbox-lang');
+    var outEl = document.getElementById('sandbox-output');
+    var histEl = document.getElementById('sandbox-history');
+    var DRAFT_KEY = 'recruitpro-sandbox-draft';
+    var DEFAULT_CODE = codeEl ? codeEl.textContent : '';
+    function getCode() { return codeEl ? codeEl.innerText : ''; }
+    function setCode(t) { if (codeEl) codeEl.textContent = t; }
+    function setOut(t) { if (outEl) outEl.textContent = t; }
+    try {
+        var draft = localStorage.getItem(DRAFT_KEY);
+        if (draft) setCode(draft);
+    } catch (e) {}
+    function saveDraft() { try { localStorage.setItem(DRAFT_KEY, getCode()); } catch (e) {} }
+    if (codeEl) codeEl.addEventListener('input', saveDraft);
+    if (langEl) langEl.addEventListener('change', saveDraft);
+    function loadHistory() {
+        fetch('/api/sandbox/history').then(function (r) { return r.json(); }).then(function (items) {
+            if (!histEl) return;
+            if (!items.length) { histEl.innerHTML = '<div class="list-group-item text-secondary">No saved runs yet.</div>'; return; }
+            histEl.innerHTML = '';
+            items.forEach(function (it) {
+                var b = document.createElement('button');
+                b.className = 'list-group-item list-group-item-action';
+                b.textContent = '#' + it.id + ' | ' + it.language + ' | ' + it.created_at + ' | ' + it.code_preview;
+                b.addEventListener('click', function () {
+                    fetch('/api/sandbox/load/' + it.id).then(function (r) { return r.json(); }).then(function (d) {
+                        if (d.code) { setCode(d.code); saveDraft(); setOut('Loaded #' + it.id + '\n' + (d.output || '')); }
+                    });
+                });
+                histEl.appendChild(b);
+            });
+        }).catch(function () { if (histEl) histEl.innerHTML = '<div class="list-group-item text-secondary">Could not load history.</div>'; });
+    }
+    function runCode() {
+        var code = getCode();
+        saveDraft();
+        setOut('Running...');
+        fetch('/api/sandbox/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code, language: langEl ? langEl.value : 'python' })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+            setOut(d.success ? ('Output:\n' + d.output) : ('Error:\n' + d.output));
+            loadHistory();
+        }).catch(function () { setOut('Server error — your draft is still saved in this browser.'); });
+    }
+    var runBtn = document.getElementById('sandbox-run');
+    var subBtn = document.getElementById('sandbox-submit');
+    var resetBtn = document.getElementById('sandbox-reset');
+    if (runBtn) runBtn.addEventListener('click', runCode);
+    if (subBtn) subBtn.addEventListener('click', runCode);
+    if (resetBtn) resetBtn.addEventListener('click', function () {
+        setCode(DEFAULT_CODE);
+        saveDraft();
+        setOut('Code reset to the default example.');
+    });
+    loadHistory();
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+RECRUITPRO DASHBOARD - VIDEO SCRIPT (2-3 minutes)
+
+Slide 1:
+" I'm showing you RecruitPro - a complete recruitment management dashboard built with Flask and SQLAlchemy."
+
+Slide 2: Login & Authentication
+"First, we have a secure login system. Users can log in with three roles: Administrator, Recruiter, or Interviewer. Each role sees only the features they need - the sidebar dynamically hides or shows options based on your role."
+
+Slide 3: Candidate Management
+"Next, candidate profiles. We can add candidates, search by name or position, filter by verification status, and view paginated lists. Each candidate has CV-like details: name, email, phone, CGPA, skills, college, and their current stage in the hiring pipeline."
+
+Slide 4: VCT Verification
+"VCT verification tracks document verification. We can verify or flag documents, view OCR confidence scores, and see eligibility status. This helps track which candidates need document review."
+
+Slide 5: Interview Scheduling
+"Interview scheduler - we can schedule interviews with panel members, set date/time, round type, and Google Meet links. The system shows today's interviews, upcoming ones, and pending feedback."
+
+Slide 6: Assessments & Coding
+"Assessments module - assign technical or coding tests to candidates, track scores and results. There's even a coding sandbox feature."
+
+Slide 7: Documents & Offer Letters
+"Document generation - create offer letters, NDA, appointment letters. New: we can download these as PDF files using xhtml2pdf. Status tracking shows generated, pending, or awaiting signature."
+
+Slide 8: Job Postings
+"Jobs module - create job postings with title, department, location, and openings. Track which candidates applied for which job. Admins can open or close positions."
+
+Slide 9: Analytics & Reports
+"Analytics page shows funnel conversion - how many candidates move from application to selection. Time-to-hire metrics and stage-wise counts help understand the hiring pipeline."
+
+Slide 10: Self-Registration
+"New users can self-register at the register page. No admin approval needed initially - they get Recruiter role and can start using the system right away."
+
+Slide 11: Demo Credentials
+"Demo login available: Admin (admin123), Recruiter (recruiter123), Interviewer (interviewer123). Or register yourself at the register page."
+
+Slide 11: Conclusion
+"That's RecruitPro! A full-featured recruitment dashboard. Try it locally by running 'python app.py' and visiting http://127.0.0.1:5000. Thanks for watching!"
+
+TIME: Approximately 2-3 minutes
+KEY POINTS TO EMPHASIZE:
+- Three-role authentication system
+- Dashboard KPIs and pipeline tracking
+- Document verification (VCT)
+- Interview scheduling with Meet links
+- PDF document download
+- Self-registration feature
+- Role-based sidebar navigation
+
+DELIVERY TIPS:
+- Speak clearly, moderate pace
+- Mention it's Flask + SQLAlchemy + Bootstrap
+- Show the sidebar changing roles if possible
+- Highlight the new features (PDF, Register, Jobs)

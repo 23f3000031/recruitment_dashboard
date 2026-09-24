@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Calendar - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Interview Calendar</h2>
+        <p>Monthly view of scheduled interviews.</p>
+    </div>
+    <div class="text-end">
+        <a href="{{ url_for('interviews') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i> List View</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card-dashboard">
+            <div class="card-body-custom p-0">
+                <!-- Calendar Navigation -->
+                <nav class="calendar-nav bg-light p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button id="prevMonth" class="calendar-btn" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+                        <div id="currentMonth" class="calendar-month"></button>
+                        <button id="nextMonth" class="calendar-btn" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </nav>
+
+                <!-- Calendar Grid -->
+                <div id="calendarGrid" class="calendar-grid py-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calendar data fetch and rendering
+    const API_BASE = '/api/interviews';
+
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    function fetchCalendar(monthYear) {
+        const date = new Date(monthYear);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return fetch(`${API_BASE}?month=${year}-${month}`)
+            .then(res => res.json())
+            .then(data => renderCalendarGrid(data));
+    }
+
+    function renderCalendarGrid(interviewsByDay) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        let html = '<div class="calendar-row"><div class="calendar-day-header">Sun</div><div class="calendar-day-header">Mon</div><div class="calendar-day-header">Tue</div><div class="calendar-day-header">Wed</div><div class="calendar-day-header">Thu</div><div class="calendar-day-header">Fri</div><div class="calendar-day-header">Sat</div></div>';
+
+        // Generate all days of the month
+        const daysInMonth = lastDay.getDate();
+        const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        // Empty days before the first day of the month
+        for (let i = 0; i < startingDay; i++) {
+            html += '<div class="calendar-day empty"></div>';
+        }
+
+        // Days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const currentDate = new Date(today.getFullYear(), today.getMonth(), day);
+            const isToday = currentDate.toISOString().split('T')[0] === today.toISOString().split('T')[0];
+            const dayKey = formatDate(currentDate);
+            const count = interviewsByDay[dayKey] || 0;
+            const dotClass = count > 0 ? 'dot-present' : 'dot-absent';
+            const dayNum = `<span class="calendar-day-number">${day}</span>`;
+
+            if (isToday) {
+                html += `<div class="calendar-day today ${dotClass}" data-date="${dayKey}">
+                            ${dayNum}<span class="calendar-day-dot ${dotClass}" title="${count} interview(s)"></span></div>`;
+            } else {
+                html += `<div class="calendar-day ${dotClass}" data-date="${dayKey}">
+                            ${dayNum}<span class="calendar-day-dot ${dotClass}" title="${count} interview(s)"></span></div>`;
+            }
+        }
+
+        document.getElementById('calendarGrid').innerHTML = html;
+
+        // Add click listeners
+        document.querySelectorAll('.calendar-day:not(.empty)').forEach(day => {
+            day.addEventListener('click', () => {
+                const date = day.dataset.date;
+                window.location.href = `/interviews?date=${date}`;
+            });
+        });
+    }
+
+    // Navigation button click listeners
+    document.getElementById('prevMonth')?.addEventListener('click', () => {
+        const current = new Date(document.getElementById('currentMonth').textContent);
+        fetchCalendar(new Date(current.getFullYear(), current.getMonth() - 1, 1));
+    });
+
+    document.getElementById('nextMonth')?.addEventListener('click', () => {
+        const current = new Date(document.getElementById('currentMonth').textContent);
+        fetchCalendar(new Date(current.getFullYear(), current.getMonth() + 1, 1));
+    });
+
+    // Initial load - current month
+    fetchCalendar(new Date().toISOString().split('T')[0]);
+</script>
+
+{% endblock %}

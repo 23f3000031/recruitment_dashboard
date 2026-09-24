@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Jobs - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Job Postings</h2>
+        <p>Manage recruitment job openings.</p>
+    </div>
+    {% if 'jobs' in permissions %}
+    <a href="{{ url_for('add_job') }}" class="btn btn-primary-custom"><i class="bi bi-person-plus-fill"></i> Add Job</a>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    {% set dkpis = [
+        {'label': 'Open Jobs', 'value': jobs|selectattr('status','equalto','Open')|list|length, 'color': 'green'},
+        {'label': 'Closed Jobs', 'value': jobs|selectattr('status','equalto','Closed')|list|length, 'color': 'gray'}
+    ] %}
+    {% for k in dkpis %}
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon {{ k.color }}"><i class="bi bi-briefcase"></i></div>
+            <div class="stat-label">{{ k.label }}</div>
+            <div class="stat-value" style="font-size:24px;">{{ k.value }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-briefcase me-2" style="color:var(--primary-blue)"></i> All Jobs</h5>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive-custom">
+            <table class="table table-recruitment">
+                <thead><tr><th>Job Title</th><th>Department</th><th>Location</th><th>Openings</th><th>Experience</th><th>Status</th><th style="width:140px;">Actions</th></tr></thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td><strong>{{ job.title }}</strong></td>
+                        <td>{{ job.department }}</td>
+                        <td>{{ job.location }}</td>
+                        <td>{{ job.openings }}</td>
+                        <td>{{ job.experience_required }}</td>
+                        <td><span class="badge-custom {{ 'badge-completed' if job.status == 'Open' else 'badge-rejected' }}">{{ job.status }}</span></td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                {% if job.status == 'Open' %}
+                                <form method="POST" action="{{ url_for('toggle_job', id=job.id) }}"><button class="btn btn-sm btn-outline-success" title="Close"><i class="bi bi-door-closed"></i></button></form>
+                                {% endif %}
+                                <a href="{{ url_for('job_detail', id=job.id) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                {% if current_user.role == 'Administrator' %}
+                                <form method="POST" action="{{ url_for('toggle_job', id=job.id) }}"><button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button></form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Job Detail - {{ job.title }} - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <a href="{{ url_for('jobs') }}" class="text-secondary me-2"><i class="bi bi-arrow-left"></i> Back to Jobs</a>
+    <h2>{{ job.title }}</h2>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card-dashboard">
+            <div class="card-body-custom">
+                <h5>Job Details</h5>
+                <p><strong>Department:</strong> {{ job.department }}</p>
+                <p><strong>Location:</strong> {{ job.location }}</p>
+                <p><strong>Openings:</strong> {{ job.openings }}</p>
+                <p><strong>Experience Required:</strong> {{ job.experience_required }}</p>
+                <p><strong>Status:</strong> <span class="badge-custom {{ 'badge-completed' if job.status == 'Open' else 'badge-rejected' }}">{{ job.status }}</span></p>
+                <p><strong>Created:</strong> {{ job.created_at.strftime('%d %b %Y') if job.created_at else 'N/A' }}</p>
+                <p><strong>Posted by:</strong> {{ job.recruiter.name }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card-dashboard">
+            <div class="card-body-custom">
+                <h5>Job Description</h5>
+                <p>{{ job.description | default('No description provided') }}</p>
+                {% if job.openings > 1 %}
+                <p><strong>Note:</strong> This job has {{ job.openings }} openings available.</p>
+                {% endif %}
+                <hr>
+                <h6>Candidate Applications</h6>
+                <p>Candidates applying for this job will be tagged with this job title.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Generated Documents - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Generated Documents</h2>
+        <p>View and manage system-generated recruitment documents.</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#generateModal"><i class="bi bi-file-earmark-plus-fill"></i> Generate Document</button>
+</div>
+
+<div class="row g-3 mb-4">
+    {% set dkpis = [
+        {'label': 'Generated', 'value': gen_count, 'color': 'green'},
+        {'label': 'Pending', 'value': pend_count, 'color': 'orange'},
+        {'label': 'Awaiting Signature', 'value': await_count, 'color': 'purple'}
+    ] %}
+    {% for k in dkpis %}
+    <div class="col-4">
+        <div class="stat-card text-center">
+            <div class="stat-label">{{ k.label }}</div>
+            <div class="stat-value" style="font-size:24px;">{{ k.value }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-file-earmark-text me-2" style="color:var(--primary-blue)"></i> All Documents</h5>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive-custom">
+            <table class="table table-recruitment">
+                <thead><tr><th>Candidate</th><th>Document Type</th><th>Triggered By</th><th>Generated Date</th><th>Status</th><th style="width:120px;">Action</th></tr></thead>
+                <tbody>
+                    {% if documents %}
+                    {% for d in documents %}
+                    <tr>
+                        <td><div class="candidate-cell"><span class="candidate-avatar {{ d.candidate.avatar_color }}">{{ d.candidate.name|get_initials }}</span><span class="candidate-name">{{ d.candidate.name }}</span></div></td>
+                        <td><strong>{{ d.type }}</strong></td>
+                        <td>{{ d.triggered_by }}</td>
+                        <td>{{ d.generated_date.strftime('%d %b %Y') if d.generated_date else '-' }}</td>
+                        <td>{% set dbadge = {'Generated':'badge-completed','Pending':'badge-review','Awaiting Signature':'badge-interview','Sent':'badge-completed'} %}<span class="badge-custom {{ dbadge.get(d.status,'badge-review') }}">{{ d.status }}</span></td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('download_document', id=d.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                                <a href="{{ url_for('download_document', id=d.id) }}" class="btn btn-sm btn-primary-custom"><i class="bi bi-file-pdf"></i> PDF</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-4 text-secondary">No documents generated</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="generateModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Generate Document</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <form method="POST" action="{{ url_for('generate_document') }}"><div class="modal-body">
+        <div class="row g-3">
+            <div class="col-12"><label class="form-label">Candidate <span class="text-danger">*</span></label>
+                <select name="candidate_id" class="form-select" required><option value="">Select</option>{% for c in candidates %}<option value="{{ c.id }}">{{ c.name }} - {{ c.position }}</option>{% endfor %}</select></div>
+            <div class="col-md-6"><label class="form-label">Document Type</label>
+                <select name="type" class="form-select"><option value="Offer Letter">Offer Letter / LOI</option><option value="NDA">NDA</option><option value="Shortlist Letter">Call-up / Shortlist Letter</option><option value="Appointment Letter">Appointment Letter</option><option value="Internship Certificate">Internship Certificate</option></select></div>
+            <div class="col-md-6"><label class="form-label">Triggered By</label>
+                <select name="triggered_by" class="form-select"><option value="System">System</option><option value="Selection">Selection</option><option value="Interview">Interview</option><option value="Shortlisting">Shortlisting</option></select></div>
+        </div>
+    </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary-custom">Generate</button></div></form>
+</div></div></div>
+
+{% endblock %}

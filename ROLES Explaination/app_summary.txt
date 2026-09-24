@@ -1,0 +1,559 @@
+=== RECRUITPRO ADMIN PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Admin Panel - Complete system management interface for HR Administrators.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: admin@recruitpro.com / admin123
+- Role: Administrator (full access to all features)
+
+USER ROLE: ADMINISTRATOR
+- Full system access and management capabilities
+- Can add, edit, and delete users
+- Can configure system settings (SMTP, preferences)
+- Has access to all features and modules
+- Can manage job postings
+- Can view and edit all candidate data
+- Can generate system reports
+- Can reset user passwords
+- Can enable/disable user accounts
+- Has complete dashboard analytics
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View complete recruitment pipeline metrics
+   - KPIs: Total candidates, pending verification, interviews today, selected candidates
+   - Real-time statistics and alerts
+
+2. USER MANAGEMENT
+   - Add new users (Recruiter, Interviewer roles)
+   - Reset user passwords
+   - Enable/disable user accounts
+   - Delete users (except own account)
+   - View all system users with roles and last login
+
+3. COMPLETE ACCESS TO ALL FEATURES
+   - Candidates: Full CRUD (Create, Read, Update, Delete)
+   - VCT Verification: View and manage document verification
+   - Queues: View recruitment pipeline stages
+   - Assessments: Assign and track assessments
+   - Interviews: Schedule, manage, and view all interviews
+   - Documents: Generate and download all documents
+   - Resume Formatter: Access resume formatting tools
+   - Reports: View comprehensive analytics
+   - Settings: Configure system settings
+   - Jobs: Create and manage job postings
+   - Calendar: View interview calendar
+   - Advanced Analytics: Funnel conversion and time-to-hire
+
+4. SYSTEM CONFIGURATION
+   - SMTP email settings configuration
+   - User role management
+   - System preferences
+   - Audit log viewing
+
+5. DATA EXPORT
+   - CSV export of candidates
+   - PDF document downloads
+   - Analytics data export
+
+NAVIGATION:
+- Full sidebar access visible to admin
+- All menu items available
+- Settings section for system configuration
+- Users management section
+
+FLASH MESSAGES:
+- Welcome back notifications
+- Action confirmation messages
+- Error notifications for invalid operations
+- Success messages for completed tasks
+
+USE CASES:
+- HR Administrator managing entire recruitment process
+- Creating and managing user accounts
+- Configuring system settings
+- Generating system reports
+- Managing all candidate data
+- Overseeing complete hiring pipeline
+
+=== RECRUITPRO RECRUITER PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Recruiter Panel - Recruitment management interface for hiring managers and recruiters.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: recruiter@recruitpro.com / recruiter123
+- Role: Recruiter (limited access vs Administrator)
+
+USER ROLE: RECRUITER
+- Recruitment management capabilities
+- Can manage candidate profiles and pipeline
+- Can assign assessments and schedule interviews
+- Can generate documents for candidates
+- Has restricted access compared to Administrator
+- Cannot manage other users
+- Cannot configure system settings
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View recruitment KPIs relevant to recruiters
+   - Metrics: Total candidates, pending verification, interviews today, selected candidates
+   - Quick action shortcuts for common tasks
+
+2. CANDIDATE MANAGEMENT
+   - View candidate profiles and details
+   - Search and filter candidates by name or position
+   - Add new candidates to the system
+   - Edit candidate information
+   - Move candidates between pipeline stages
+   - View candidate verification status (Verified/Pending/Flagged)
+
+3. RECRUITER-SPECIFIC FEATURES:
+   - View and manage VCT verification queue
+   - Assign assessments to candidates
+   - Schedule interviews with panel members
+   - Generate offer letters and documents
+   - View candidate pipeline stages
+   - Access resume formatter
+   - View interview schedules
+
+4. RECRUITER LIMITATIONS (vs Admin):
+   - Cannot add/manage other users
+   - Cannot configure system settings
+   - Cannot delete candidates (only move stages)
+   - Cannot access settings menu
+   - Cannot manage job postings (unless created by them)
+   - Cannot access advanced analytics fully
+
+5. QUICK ACTIONS:
+   - Review VCT verification queue
+   - Add new candidates
+   - Assign assessments
+   - Schedule interviews
+   - View recent candidates
+
+NAVIGATION:
+- Sidebar shows: Dashboard, Candidate Profiles, VCT Verification, Recruitment Queue, Assessments, Coding Sandbox, Interview Schedule, Generated Documents, Resume Formatter, Reports
+- Settings link NOT visible
+- User management NOT available
+
+FLASH MESSAGES:
+- Action confirmations (candidate added, assessment assigned)
+- Error messages for invalid operations
+- Success notifications for completed tasks
+- Reminder notifications for pending actions
+
+USE CASES:
+- Recruiter managing day-to-day candidate operations
+- Scheduling interviews and sending invites
+- Tracking candidate progress through pipeline
+- Assigning and grading assessments
+- Generating offer letters for selected candidates
+- Viewing candidate verification status
+- Collaborating with interviewers on candidate evaluations
+
+ACCESSIBLE PAGES:
+- Dashboard, Candidates, Candidate Detail
+- VCT Verification, Queues
+- Assessments, Assign Assessment
+- Interviews, Schedule Interview
+- Documents, Generate Document
+- Resume Formatter
+- Reports (limited view)
+- Login/Register pages
+
+RESTRICTED PAGES:
+- Settings, Users Management
+- Job Posting Creation (unless already created)
+- Advanced Analytics (full version)
+
+=== RECRUITPRO INTERVIEWER PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Interviewer Panel - Interview management interface for hiring panel members.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: interviewer@recruitpro.com / interviewer123
+- Role: Interviewer (limited access focused on interview activities)
+
+USER ROLE: INTERVIEWER
+- Interview feedback and evaluation focus
+- Can submit feedback and ratings on interviews
+- Can access interview details and meet links
+- Has the most restricted access of the three roles
+- Cannot manage candidates or job postings
+- Can only view and provide feedback on interviews
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View interview-specific KPIs
+   - Metrics: Today's interviews, upcoming interviews, completed interviews
+   - Interview count statistics
+
+2. INTERVIEW MANAGEMENT
+   - View all scheduled interviews
+   - Filter interviews by date, status, candidate
+   - View interview details (date, time, round type, meet link)
+   - Submit feedback forms
+   - Provide recommendations (Strongly Hire / Hire / Maybe / No Hire)
+   - Add interview notes and comments
+
+3. INTERVIEWER-SPECIFIC FEATURES:
+   - Submit feedback for conducted interviews
+   - View interview details and candidate information
+   - Access meet links for scheduled interviews
+   - View candidate information and resume basics
+   - Submit rating for communication, technical skill, problem-solving, cultural fit
+   - Submit overall recommendation
+
+4. INTERVIEWER LIMITATIONS (vs Recruiter/Admin):
+   - Cannot add or manage candidates
+   - Cannot schedule new interviews (already scheduled only)
+   - Cannot access candidate full profiles (limited info)
+   - Cannot access VCT verification
+   - Cannot manage assessments
+   - Cannot generate documents
+   - Cannot access job postings
+   - Cannot access system settings
+
+5. QUICK ACTIONS:
+   - View today's interviews
+   - Submit interview feedback
+   - Access scheduled interviews
+   - View interview details
+   - Submit ratings and recommendations
+
+NAVIGATION:
+- Sidebar shows: Dashboard, Coding Sandbox, Interview Schedule, Notifications
+- Settings link NOT visible
+- Candidate management NOT available
+- VCT Verification NOT available
+- Queue management NOT available
+- Assessment management NOT available
+- Document management NOT available
+- Reports limited view only
+
+FLASH MESSAGES:
+- Feedback submission confirmations
+- Interview status updates
+- Reminder notifications
+- Error messages for invalid actions
+
+USE CASES:
+- Interviewer conducting scheduled interviews
+- Providing structured feedback on candidate performance
+- Rating candidate skills and providing hiring recommendations
+- Accessing interview details and meet links
+- Viewing interview history and status
+
+ACCESSIBLE PAGES:
+- Dashboard (interviewer view)
+- Interviews list
+- Interview detail page (with feedback form)
+- Coding Sandbox
+- Notifications
+
+RESTRICTED PAGES:
+- Candidates, Candidate Detail
+- VCT Verification
+- Queues, Assessment management
+- Documents generation
+- Job postings
+- User management/Settings
+- Advanced analytics
+
+FLow:
+1. Interviewer logs in
+2. Views today's/interviewer's interviews
+3. Clicks on interview detail
+4. Submits feedback (ratings + recommendation)
+5. Recommendation may auto-move candidate to next stage
+6. Feedback stored and visible to recruitment team
+7. Returns to interview list
+
+SCREEN FLOW:
+- Login → Interview Dashboard → Select Interview → Submit Feedback → Confirmation
+
+BENEFITS:
+- Structured feedback collection
+- Consistent rating criteria
+- Hiring decision support
+- Interview process documentation
+- Team collaboration on candidate evaluation
+
+RECOMMENDED WORKFLOW:
+1. Interviewer logs in via http://127.0.0.1:5000/login
+2. Clicks on "Interview Schedule" in sidebar
+3. Selects interview to review
+4. Submits feedback form with 1-5 ratings
+5. Provides hiring recommendation
+6. Clicks submit → Feedback saved → Candidate stage may update
+7. Returns to interview list
+
+=== RECRUITPRO COMPLETE APPLICATION SUMMARY ===
+
+OVERVIEW:
+RecruitPro is a comprehensive Flask-based Recruitment Management System designed to streamline the entire hiring process from candidate application to onboarding. Built with Python, Flask, SQLAlchemy, and Bootstrap5, it provides a complete solution for recruitment teams of all sizes.
+
+CORE ARCHITECTURE:
+- Framework: Flask 3.1.0 with Flask-SQLAlchemy 3.1.1
+- Database: SQLite with migration support
+- Frontend: Bootstrap5 with custom styling
+- Authentication: Flask-Login with role-based access control
+- Templates: 20+ HTML templates with responsive design
+- JavaScript: Interactive features (sidebar, dark mode, search)
+
+ROLE-BASED ACCESS CONTROL:
+Three distinct user roles with progressively restricted access:
+
+1. ADMINISTRATOR (Full Access)
+   - User management (add, edit, delete users)
+   - System configuration (SMTP, preferences)
+   - All features and modules available
+   - Analytics and reports access
+   - Job posting management
+   - Complete dashboard analytics
+
+2. RECRUITER (Limited Access)
+   - Candidate management (CRUD operations)
+   - VCT verification oversight
+   - Interview scheduling and management
+   - Assessment assignment
+   - Document generation
+   - Limited analytics view
+   - Cannot manage users or system settings
+   - Cannot delete candidates
+
+3. INTERVIEWER (Focused Access)
+   - Interview feedback submission
+   - Interview viewing and details
+   - Rating and recommendation submission
+   - Access to scheduled interviews only
+   - Limited dashboard view
+   - Cannot manage candidates, assessments, or documents
+
+CORE MODULES (15+ Features):
+
+1. AUTHENTICATION & AUTHORIZATION
+   - Login/Logout functionality
+   - Role-based access control
+   - Self-registration capability
+   - Password hashing with Werkzeug
+   - Session management
+
+2. CANDIDATE MANAGEMENT
+   - Add candidates with full CV data
+   - Search and filter candidates
+   - Paginated candidate lists
+   - Stage progression tracking
+   - Verification status tracking
+   - Candidate avatar and initials
+
+3. VCT VERIFICATION
+   - Document verification tracking
+   - OCR confidence scoring
+   - Eligibility checking
+   - Document discrepancy tracking
+   - Verification status management (Verified/Pending/Flagged)
+
+4. INTERVIEW SCHEDULING
+   - Schedule interviews with panel members
+   - Google Meet link generation
+   - Interview round types (Technical, HR, Final)
+   - Reminder system (24h, 1h, 10m)
+   - Interview status tracking (Scheduled/Completed/Cancelled)
+   - Feedback submission system
+
+5. ASSESSMENT MANAGEMENT
+   - Assign technical/coding assessments
+   - Track scores and results
+   - Assessment types (Technical, Aptitude, Coding)
+   - Score tracking (overall, technical, problem-solving, coding, accuracy)
+   - Pass/Fail results
+
+6. DOCUMENT MANAGEMENT
+   - Offer letter generation
+   - NDA and call-up letters
+   - PDF download capability
+   - Document status tracking (Pending/Generated/Awaiting Sign/Sent)
+   - Candidate document history
+
+7. RECRUITMENT QUEUE
+   - Pipeline stage tracking (8 stages)
+   - Visual pipeline representation
+   - Stage-wise candidate counts
+   - Stage progression tracking
+
+8. JOB POSTINGS
+   - Create job openings
+   - Department and location tracking
+   - Openings management
+   - Experience requirements
+   - Job status (Open/Closed)
+
+9. ADVANCED ANALYTICS
+   - Funnel conversion tracking
+   - Stage-wise drop-off analysis
+   - Time-to-hire metrics
+   - Candidate source tracking
+   - Dashboard KPIs
+
+10. REPORTING
+    - Comprehensive reports
+    - Analytics dashboard
+    - Data export capabilities
+    - Visual statistics
+
+10. RESUME FORMATTER
+    - Resume formatting tool
+    - Candidate resume access
+
+10. CALENDAR VIEW
+    - Month-grid interview view
+    - Navigation (Prev/Next month)
+    - Day-click interview details
+
+10. BULK ACTIONS (Planned)
+    - CSV import/export
+    - Stage migration
+    - Candidate filtering
+
+10. USER MANAGEMENT
+    - Add/edit/remove users
+    - Role assignment
+    - Password reset
+    - Account enable/disable
+
+10. SETTINGS CONFIGURATION
+    - SMTP email settings
+    - System preferences
+    - User role management
+
+10. VIDEO SCRIPT
+    - 2-3 minute presentation script
+    - Covers all key features
+    - Demo credentials included
+    - Suitable for team presentations
+
+10. USER ROLES SUMMARY:
+    - ADMINISTRATOR: Full access - manages users, settings, all data
+    - RECRUITER: Limited access - manages candidates, assessments, documents
+    - INTERVIEWER: Focused access - submits feedback on interviews only
+
+USER FLOW EXAMPLES:
+
+EXAMPLE 1: Admin Full Workflow
+1. Login as admin@recruitpro.com / admin123
+2. Access dashboard with full KPIs
+3. Manage users via Settings menu
+4. Configure SMTP email settings
+5. Create job postings
+6. View analytics and reports
+7. Generate PDF documents
+8. Manage all candidate data
+9. Oversee complete hiring pipeline
+
+EXAMPLE 2: Recruiter Daily Workflow
+1. Login as recruiter@recruitpro.com / recruiter123
+2. View dashboard with recruiter KPIs
+3. Search and filter candidates
+4. Add new candidates to pipeline
+5. Move candidates between stages
+6. Assign assessments to candidates
+7. Schedule interviews with panel
+8. Generate offer letters
+9. Track candidate verification status
+10. View recruitment queue
+
+EXAMPLE 3: Interviewer Daily Workflow
+1. Login as interviewer@recruitpro.com / interviewer123
+2. View interview schedule
+3. Access assigned interviews
+4. Submit feedback with ratings (1-5 stars)
+5. Provide hiring recommendation
+6. Access meet links for interviews
+7. View interview details and candidate info
+8. Complete feedback submission
+9. Return to interview list
+
+TECHNICAL SPECIFICATIONS:
+
+LANGUAGE & FRAMEWORK:
+- Python 3.13
+- Flask 3.1.0 (web framework)
+- Flask-SQLAlchemy 3.1.1 (ORM)
+- Flask-Login 0.6.3 (authentication)
+- Flask-Mail 0.10.0 (email functionality)
+- xhtml2pdf 0.2.18 (PDF generation)
+
+DATABASE:
+- SQLite database (recruitment.db)
+- 13+ database tables
+- Relationships between candidates, interviews, assessments, documents
+- Seed data for immediate testing
+
+FRONTEND:
+- Bootstrap5 v5.3.3 custom styling
+- 20+ HTML templates
+- Responsive design for mobile/desktop
+- Custom CSS with CSS variables
+- Font Awesome icons
+- Dark mode support (localStorage persistence)
+
+JAVASCRIPT INTERACTIVITY:
+- Sidebar toggle and collapse
+- Dark mode toggle with localStorage persistence
+- Global search functionality
+- Dropdown menu management
+- Form validation
+- AJAX interactions where applicable
+
+ACCOUNT TYPES:
+- Admin: admin@recruitpro.com / admin123
+- Recruiter: recruiter@recruitpro.com / recruiter123
+- Interviewer: interviewer@recruitpro.com / interviewer123
+- Self-registration available at /register
+
+REQUIREMENTS TO RUN:
+- Python 3.13+
+- pip install -r requirements.txt
+- Run: python app.py
+- Access: http://127.0.0.1:5000
+
+KEY BENEFITS:
+- Single system for complete recruitment lifecycle
+- Role-based access for security
+- Automated email notifications
+- PDF document generation
+- Structured interview feedback
+- Analytics for decision-making
+- Responsive design for any device
+- Easy installation and setup
+- Extensible architecture
+
+IDEAL FOR:
+- Small to medium recruitment teams
+- HR departments
+- hiring managers
+- Interview panels
+- Recruitment agencies
+- Internal hiring processes
+
+The application is ready to use immediately after running python app.py and provides a complete recruitment management solution out-of-the-box.
+
+IDEAL FOR:
+- Small to medium recruitment teams
+- HR departments
+- hiring managers
+- Interview panels
+- Recruitment agencies
+- Internal hiring processes
+
+The application is ready to use immediately after running python app.py and provides a complete recruitment management solution out-of-the-box.

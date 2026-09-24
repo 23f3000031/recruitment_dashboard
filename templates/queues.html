@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Recruitment Queue - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h2>Recruitment Queue</h2>
+    <p>Monitor candidates across different recruitment stages.</p>
+</div>
+
+{% set stage_config = {
+    'Applications': {'icon': 'bi-inbox-fill', 'color': '#2563EB', 'bg': '#EFF6FF'},
+    'VCT Verification': {'icon': 'bi-shield-check', 'color': '#9333EA', 'bg': '#FAF5FF'},
+    'Assessment': {'icon': 'bi-clipboard-check-fill', 'color': '#EA580C', 'bg': '#FFF7ED'},
+    'Shortlisted': {'icon': 'bi-person-check-fill', 'color': '#0891B2', 'bg': '#ECFEFF'},
+    'Interview': {'icon': 'bi-calendar-event-fill', 'color': '#DC2626', 'bg': '#FEF2F2'},
+    'Selected': {'icon': 'bi-check-circle-fill', 'color': '#16A34A', 'bg': '#F0FDF4'},
+    'Documentation': {'icon': 'bi-file-earmark-text-fill', 'color': '#D97706', 'bg': '#FFFBEB'},
+    'Joined': {'icon': 'bi-people-fill', 'color': '#6B7280', 'bg': '#F9FAFB'}
+} %}
+
+<div class="queue-wrapper">
+    <div class="queue-scroll">
+        {% for stage in stages %}
+        {% set config = stage_config.get(stage, {'icon': 'bi-question', 'color': '#6B7280', 'bg': '#F9FAFB'}) %}
+        {% set stage_candidates = queue_data.get(stage, []) %}
+        <div class="queue-column">
+            <div class="queue-column-header" style="border-top:3px solid {{ config.color }};">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi {{ config.icon }}" style="color:{{ config.color }};font-size:16px;"></i>
+                    <h6 class="mb-0">{{ stage }}</h6>
+                </div>
+                <span class="queue-count-badge" style="background:{{ config.bg }};color:{{ config.color }};">{{ stage_candidates|length }}</span>
+            </div>
+            <div class="queue-column-body">
+                {% if stage_candidates %}
+                {% for c in stage_candidates %}
+                <a href="{{ url_for('candidate_detail', id=c.id) }}" class="queue-card-item">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="candidate-avatar-sm {{ c.avatar_color }}">{{ c.name|get_initials }}</span>
+                        <div class="queue-card-info">
+                            <div class="queue-card-name">{{ c.name }}</div>
+                            <div class="queue-card-pos">{{ c.position }}</div>
+                            <div class="queue-card-date">{{ c.applied_date.strftime('%d %b') if c.applied_date else '' }}</div>
+                        </div>
+                    </div>
+                    {% set v_badge_map = {'Verified':'badge-completed','Pending Review':'badge-review','Flagged':'badge-rejected'} %}
+                    <span class="badge-custom {{ v_badge_map.get(c.verification_status,'badge-review') }}" style="font-size:10px;">{{ c.verification_status }}</span>
+                </a>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3 text-secondary" style="font-size:12px;"><i class="bi bi-inbox" style="font-size:20px;"></i><p class="mt-1 mb-0">No candidates</p></div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

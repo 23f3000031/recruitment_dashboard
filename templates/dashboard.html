@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Recruitment Dashboard</h2>
+        <p>Monitor candidate verification, assessments, interviews and hiring progress.</p>
+    </div>
+    <span class="text-secondary small"><i class="bi bi-clock me-1"></i> Last updated: Just now</span>
+</div>
+
+<div class="row g-3 mb-4">
+    {% set kpis = [
+        {'icon': 'bi-people-fill', 'color': 'blue', 'label': 'Total Candidates', 'value': stats.total_candidates, 'sub': 'Total registered candidate profiles'},
+        {'icon': 'bi-shield-check', 'color': 'orange', 'label': 'Pending Verification', 'value': stats.pending_verification, 'sub': 'Requires VCT review'},
+        {'icon': 'bi-calendar-event-fill', 'color': 'purple', 'label': 'Interviews Today', 'value': stats.interviews_today, 'sub': 'Upcoming scheduled interviews'},
+        {'icon': 'bi-person-check-fill', 'color': 'green', 'label': 'Selected Candidates', 'value': stats.selected, 'sub': 'Current selection cycle'}
+    ] %}
+    {% for k in kpis %}
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon {{ k.color }}"><i class="bi {{ k.icon }}"></i></div>
+            <div class="stat-label">{{ k.label }}</div>
+            <div class="stat-value">{{ k.value }}</div>
+            <div class="stat-sub">{{ k.sub }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="card-dashboard">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-diagram-3-fill me-2" style="color:var(--primary-blue)"></i> Recruitment Pipeline</h5>
+            </div>
+            <div class="card-body-custom">
+                {% set max_count = pipeline_counts|map(attribute='count')|max or 1 %}
+                {% for p in pipeline_counts %}
+                <div class="pipeline-item">
+                    <span class="pipeline-dot" style="background:{{ ['#2563EB','#9333EA','#EA580C','#0891B2','#DC2626','#16A34A','#D97706','#6B7280'][loop.index0] }};"></span>
+                    <div class="pipeline-info">
+                        <div class="pipeline-name">{{ p.stage }}</div>
+                        <div class="progress"><div class="progress-bar" style="width:{{ (p.count / max_count * 100)|int }}%;background:{{ ['#2563EB','#9333EA','#EA580C','#0891B2','#DC2626','#16A34A','#D97706','#6B7280'][loop.index0] }};"></div></div>
+                    </div>
+                    <div class="pipeline-count">{{ p.count }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card-dashboard">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-shield-fill-check me-2" style="color:var(--primary-blue)"></i> VCT Verification</h5>
+                <a href="{{ url_for('vct') }}">Open Queue <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="card-body-custom">
+                {% set vct_items = [
+                    {'label': 'Verified', 'count': vct_status.verified, 'color': '#16A34A', 'bg': '#F0FDF4'},
+                    {'label': 'Pending Review', 'count': vct_status.pending, 'color': '#D97706', 'bg': '#FFFBEB'},
+                    {'label': 'OCR Flagged', 'count': vct_status.flagged, 'color': '#DC2626', 'bg': '#FEF2F2'},
+                    {'label': 'Eligibility Failed', 'count': vct_status.failed, 'color': '#6B7280', 'bg': '#F9FAFB'}
+                ] %}
+                {% for v in vct_items %}
+                <div class="vct-status-item">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="vct-dot" style="background:{{ v.color }};"></span>
+                        <span class="vct-label">{{ v.label }}</span>
+                    </div>
+                    <span class="vct-count" style="color:{{ v.color }};">{{ v.count }}</span>
+                </div>
+                {% endfor %}
+                <a href="{{ url_for('vct') }}" class="btn btn-outline-custom btn-sm w-100 mt-3"><i class="bi bi-arrow-right"></i> Open Verification Queue</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-5">
+        <div class="card-dashboard">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-calendar-check me-2" style="color:var(--primary-blue)"></i> Today's Interviews</h5>
+                <a href="{{ url_for('interviews') }}">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="card-body-custom">
+                {% if interviews %}
+                {% for iv in interviews %}
+                <div class="interview-item">
+                    <div class="interview-time">{{ iv.time }}</div>
+                    <div class="interview-info">
+                        <div class="interview-name">{{ iv.candidate.name }}</div>
+                        <div class="interview-position">{{ iv.candidate.position }}</div>
+                        <span class="interview-round">{{ iv.round_type }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4 text-secondary"><i class="bi bi-calendar3" style="font-size:32px;"></i><p class="mt-2 mb-0">No interviews scheduled for today</p></div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-dashboard mt-3">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-lightning-fill me-2" style="color:var(--primary-blue)"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body-custom">
+                <div class="quick-actions-grid">
+                    <a href="{{ url_for('vct') }}" class="quick-action-item"><i class="bi bi-shield-check"></i><span>Review VCT</span></a>
+                    <a href="{{ url_for('candidates') }}" class="quick-action-item"><i class="bi bi-person-plus-fill"></i><span>Add Candidate</span></a>
+                    <a href="{{ url_for('assessments') }}" class="quick-action-item"><i class="bi bi-clipboard-plus-fill"></i><span>Assign Assessment</span></a>
+                    <a href="{{ url_for('interviews') }}" class="quick-action-item"><i class="bi bi-calendar-plus-fill"></i><span>Schedule Interview</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card-dashboard">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-clock-history me-2" style="color:var(--primary-blue)"></i> Recent Candidates</h5>
+                <a href="{{ url_for('candidates') }}">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive-custom">
+                    <table class="table table-recruitment">
+                        <thead><tr><th>Candidate</th><th>Role</th><th>CGPA</th><th>Verification</th><th>Stage</th><th>Applied</th><th style="width:40px;"></th></tr></thead>
+                        <tbody>
+                            {% for c in candidates %}
+                            <tr>
+                                <td><div class="candidate-cell"><span class="candidate-avatar {{ c.avatar_color }}">{{ c.name|get_initials }}</span><span class="candidate-name">{{ c.name }}</span></div></td>
+                                <td>{{ c.position }}</td>
+                                <td>{{ c.cgpa or '-' }}</td>
+                                <td>{% set v_badge = {'Verified':'badge-completed','Pending Review':'badge-review','Flagged':'badge-rejected'} %}<span class="badge-custom {{ v_badge.get(c.verification_status,'badge-review') }}">{{ c.verification_status }}</span></td>
+                                <td><span class="badge-custom badge-interview">{{ c.stage }}</span></td>
+                                <td>{{ c.applied_date.strftime('%d %b %Y') if c.applied_date else '-' }}</td>
+                                <td><a href="{{ url_for('candidate_detail', id=c.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-dashboard mt-3">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-exclamation-triangle-fill me-2" style="color:var(--warning)"></i> Attention Required</h5>
+            </div>
+            <div class="card-body-custom">
+                {% for a in alerts %}
+                <a href="{{ a.link }}" class="alert-item {{ a.color }}">
+                    <i class="bi bi-{{ a.icon }}"></i>
+                    <span>{{ a.text }}</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

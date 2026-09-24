@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RecruitPro - Recruitment Portal{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand d-flex align-items-center gap-3">
+        <div class="brand-icon">RP</div>
+        <div>
+            <div class="brand-name">RecruitPro</div>
+            <div class="brand-sub">Recruitment Portal</div>
+        </div>
+    </div>
+
+    <div class="sidebar-section-title">Main</div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+    </nav>
+
+    {% if 'candidates' in permissions %}
+    <div class="sidebar-section-title">Recruitment</div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('candidates') }}" class="nav-item {% if active_page == 'candidates' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i><span>Candidate Profiles</span></a>
+        {% if 'vct' in permissions %}
+        <a href="{{ url_for('vct') }}" class="nav-item {% if active_page == 'vct' %}active{% endif %}">
+            <i class="bi bi-shield-check"></i><span>VCT Verification</span></a>
+        {% endif %}
+        {% if 'queues' in permissions %}
+        <a href="{{ url_for('queues') }}" class="nav-item {% if active_page == 'queues' %}active{% endif %}">
+            <i class="bi bi-list-task"></i><span>Recruitment Queue</span></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% if 'assessments' in permissions or 'coding_sandbox' in permissions %}
+    <div class="sidebar-section-title">Evaluation</div>
+    <nav class="sidebar-nav">
+        {% if 'assessments' in permissions %}
+        <a href="{{ url_for('assessments') }}" class="nav-item {% if active_page == 'assessments' %}active{% endif %}">
+            <i class="bi bi-clipboard-data-fill"></i><span>Assessments</span></a>
+        {% endif %}
+        {% if 'coding_sandbox' in permissions %}
+        <a href="{{ url_for('coding_sandbox') }}" class="nav-item {% if active_page == 'coding_sandbox' %}active{% endif %}">
+            <i class="bi bi-code-slash"></i><span>Coding Sandbox</span></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% if 'interviews' in permissions %}
+    <div class="sidebar-section-title">Interviews</div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('interviews') }}" class="nav-item {% if active_page == 'interviews' %}active{% endif %}">
+            <i class="bi bi-calendar-event-fill"></i><span>Interview Schedule</span></a>
+    </nav>
+    {% endif %}
+
+    {% if 'documents' in permissions or 'resume_formatter' in permissions %}
+    <div class="sidebar-section-title">Documents</div>
+    <nav class="sidebar-nav">
+        {% if 'documents' in permissions %}
+        <a href="{{ url_for('documents') }}" class="nav-item {% if active_page == 'documents' %}active{% endif %}">
+            <i class="bi bi-file-earmark-text-fill"></i><span>Generated Documents</span></a>
+        {% endif %}
+        {% if 'resume_formatter' in permissions %}
+        <a href="{{ url_for('resume_formatter') }}" class="nav-item {% if active_page == 'resume_formatter' %}active{% endif %}">
+            <i class="bi bi-file-person-fill"></i><span>Resume Formatter</span></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% if 'reports' in permissions %}
+    <div class="sidebar-section-title">Analytics</div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('reports') }}" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+            <i class="bi bi-bar-chart-fill"></i><span>Reports</span></a>
+    </nav>
+    {% endif %}
+
+    <div class="sidebar-section-title">System</div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('notifications') }}" class="nav-item {% if active_page == 'notifications' %}active{% endif %}">
+            <i class="bi bi-bell-fill"></i><span>Notifications</span>
+            {% if unread_count > 0 %}<span class="sidebar-badge">{{ unread_count }}</span>{% endif %}</a>
+        {% if 'settings' in permissions %}
+        <a href="{{ url_for('settings') }}" class="nav-item {% if active_page == 'settings' %}active{% endif %}">
+            <i class="bi bi-gear-fill"></i><span>Settings</span></a>
+        {% endif %}
+    </nav>
+</aside>
+
+<div class="main-content">
+    <header class="top-navbar">
+        <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" id="globalSearch" placeholder="Search candidates, applications, interviews...">
+        </div>
+        <div class="navbar-right">
+            <button id="darkModeToggle" class="theme-toggle" title="Toggle Dark Mode">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            <a href="{{ url_for('notifications') }}" class="notification-btn">
+                <i class="bi bi-bell-fill"></i>
+                {% if unread_count > 0 %}<span class="badge-dot">{{ unread_count }}</span>{% endif %}
+            </a>
+            <div class="admin-profile dropdown">
+                <div class="admin-profile-trigger" data-bs-toggle="dropdown" style="display:flex;align-items:center;gap:10px;">
+                    <div class="admin-avatar">{{ current_user.avatar or 'HR' }}</div>
+                    <div class="admin-info d-none d-md-block">
+                        <div class="admin-name">{{ current_user.name }}</div>
+                        <div class="admin-role">{{ current_user.role }}</div>
+                    </div>
+                    <i class="bi bi-chevron-down d-none d-md-block nav-chevron"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="px-3 py-2 border-bottom">
+                        <div class="fw-semibold">{{ current_user.name }}</div>
+                        <div class="small text-secondary">{{ current_user.email }}</div>
+                    </div>
+                    <div class="p-2">
+                        <a href="{{ url_for('logout') }}" class="dropdown-item rounded py-1"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="page-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show py-2 small" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

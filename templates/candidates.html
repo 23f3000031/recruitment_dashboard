@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Candidate Profiles - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Candidate Profiles</h2>
+        <p>Browse and manage all candidate profiles.</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-person-plus-fill"></i> Add Candidate</button>
+</div>
+
+<div class="card-dashboard mb-4">
+    <div class="card-body-custom">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search candidate..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    {% for s in vstatuses %}
+                    <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="position" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Positions</option>
+                    {% for p in positions %}
+                    <option value="{{ p }}" {{ 'selected' if position == p }}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+                <a href="{{ url_for('candidates') }}" class="btn btn-outline-custom"><i class="bi bi-x"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-people-fill me-2" style="color:var(--primary-blue)"></i> All Candidates</h5>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive-custom">
+            <table class="table table-recruitment">
+                <thead><tr><th>Candidate</th><th>Applied Role</th><th>Education</th><th>CGPA</th><th>Skills</th><th>Verification</th><th>Stage</th><th style="width:60px;"></th></tr></thead>
+                <tbody>
+                    {% for c in candidates %}
+                    <tr>
+                        <td><div class="candidate-cell"><span class="candidate-avatar {{ c.avatar_color }}">{{ c.name|get_initials }}</span><span class="candidate-name">{{ c.name }}</span></div></td>
+                        <td>{{ c.position }}</td>
+                        <td>{{ c.education }}</td>
+                        <td>{{ c.cgpa or '-' }}</td>
+                        <td><div class="skills-preview">{{ c.skills[:40] }}{% if c.skills and c.skills|length > 40 %}...{% endif %}</div></td>
+                        <td>{% set v_badge = {'Verified':'badge-completed','Pending Review':'badge-review','Flagged':'badge-rejected'} %}<span class="badge-custom {{ v_badge.get(c.verification_status,'badge-review') }}">{{ c.verification_status }}</span></td>
+                        <td><span class="badge-custom badge-interview">{{ c.stage }}</span></td>
+                        <td><a href="{{ url_for('candidate_detail', id=c.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center py-4 text-secondary">No candidates found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="card-footer-custom">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            <li class="page-item {{ 'disabled' if not pagination.has_prev }}"><a class="page-link" href="{{ url_for('candidates', page=pagination.prev_num, search=search, status=status, position=position) }}">Previous</a></li>
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}<li class="page-item {{ 'active' if p == pagination.page }}"><a class="page-link" href="{{ url_for('candidates', page=p, search=search, status=status, position=position) }}">{{ p }}</a></li>
+                {% else %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if not pagination.has_next }}"><a class="page-link" href="{{ url_for('candidates', page=pagination.next_num, search=search, status=status, position=position) }}">Next</a></li>
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Add New Candidate</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form method="POST" action="{{ url_for('add_candidate') }}"><div class="modal-body">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" name="name" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Email <span class="text-danger">*</span></label><input type="email" name="email" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Position</label><input type="text" name="position" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">College</label><input type="text" name="college" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Degree</label><input type="text" name="degree" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">CGPA</label><input type="number" name="cgpa" class="form-control" step="0.1" min="0" max="10"></div>
+                <div class="col-md-6"><label class="form-label">Source</label><select name="source" class="form-select"><option value="Direct">Direct</option><option value="LinkedIn">LinkedIn</option><option value="Naukri">Naukri</option><option value="Referral">Referral</option><option value="Company Site">Company Site</option></select></div>
+                <div class="col-12"><label class="form-label">Skills</label><textarea name="skills" class="form-control" rows="2"></textarea></div>
+            </div>
+        </div><div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary-custom"><i class="bi bi-check-lg"></i> Add Candidate</button>
+        </div></form>
+    </div></div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,117 @@
+=== RECRUITPRO INTERVIEWER PANEL SCRIPT ===
+
+OVERVIEW:
+RecruitPro Interviewer Panel - Interview management interface for hiring panel members.
+
+ACCESS:
+- URL: http://127.0.0.1:5000/login
+- Credentials: interviewer@recruitpro.com / interviewer123
+- Role: Interviewer (limited access focused on interview activities)
+
+MAIN FEATURES:
+
+1. DASHBOARD OVERVIEW
+   - View interview-specific KPIs
+   - Metrics: Today's interviews, upcoming interviews, completed interviews
+   - Interview count statistics
+
+2. INTERVIEW MANAGEMENT
+   - View all scheduled interviews
+   - Filter interviews by date, status, candidate
+   - View interview details (date, time, round type, meet link)
+   - Access interview feedback forms
+   - Submit feedback ratings (1-5 stars)
+   - Provide recommendations (Strongly Hire / Hire / Maybe / No Hire)
+   - Add interview notes and comments
+
+3. INTERVIEWER-SPECIFIC FEATURES:
+   - Submit feedback for conducted interviews
+   - View interview details and candidate information
+   - Access meet links for scheduled interviews
+   - View candidate information and resume basics
+   - Submit rating for communication, technical skill, problem-solving, cultural fit
+   - Submit overall recommendation
+
+4. INTERVIEWER LIMITATIONS (vs Recruiter/Admin):
+   - Cannot add or manage candidates
+   - Cannot schedule new interviews (already scheduled only)
+   - Cannot access candidate full profiles (limited info)
+   - Cannot access VCT verification
+   - Cannot manage assessments
+   - Cannot generate documents
+   - Cannot access job postings
+   - Cannot access system settings
+   - Cannot manage user accounts
+
+5. QUICK ACTIONS:
+   - View today's interviews
+   - Submit interview feedback
+   - Access scheduled interviews
+   - View interview details
+   - Submit ratings and recommendations
+
+NAVIGATION:
+- Sidebar shows: Dashboard, Coding Sandbox, Interview Schedule, Notifications
+- Settings link NOT visible
+- Candidate management NOT available
+- VCT Verification NOT available
+- Queue management NOT available
+- Assessment management NOT available
+- Document management NOT available
+- Reports limited view only
+
+FLASH MESSAGES:
+- Feedback submission confirmations
+- Interview status updates
+- Reminder notifications
+- Error messages for invalid actions
+
+USE CASES:
+- Interviewer conducting scheduled interviews
+- Providing structured feedback on candidate performance
+- Rating candidate skills and providing hiring recommendations
+- Accessing interview details and meet links
+- Viewing interview history and status
+
+ACCESSIBLE PAGES:
+- Dashboard (interviewer view)
+- Interviews list
+- Interview detail page (with feedback form)
+- Coding Sandbox
+- Notifications
+
+RESTRICTED PAGES:
+- Candidates, Candidate Detail
+- VCT Verification
+- Queues, Assessment management
+- Documents generation
+- Job postings
+- User management/Settings
+- Advanced analytics
+
+FLow:
+1. Interviewer logs in
+2. Views today's/interviewer's interviews
+3. Clicks on interview detail
+4. Submits feedback (ratings + recommendation)
+5. Recommendation may auto-move candidate to next stage
+6. Feedback stored and visible to recruitment team
+
+SCREEN FLOW:
+- Login → Interview Dashboard → Select Interview → Submit Feedback → Confirmation
+
+BENEFITS:
+- Structured feedback collection
+- Consistent rating criteria
+- Hiring decision support
+- Interview process documentation
+- Team collaboration on candidate evaluation
+
+RECOMMENDED WORKFLOW:
+1. Interviewer logs in via http://127.0.0.1:5000/login
+2. Clicks on "Interview Schedule" in sidebar
+3. Selects interview to review
+4. Submits feedback form with 1-5 ratings
+5. Provides hiring recommendation
+6. Clicks submit → Feedback saved → Candidate stage may update
+7. Returns to interview list

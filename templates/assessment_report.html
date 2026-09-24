@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Assessment Report - {{ assessment.candidate.name }} - RecruitPro{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <a href="{{ url_for('assessments') }}" class="text-secondary me-2"><i class="bi bi-arrow-left"></i> Back to Assessments</a>
+    <h2 class="mt-1">Candidate Report Card</h2>
+    <p>{{ assessment.candidate.name }} - {{ assessment.name }}</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card-dashboard">
+            <div class="card-body-custom text-center">
+                <div class="candidate-avatar-lg {{ assessment.candidate.avatar_color }}">{{ assessment.candidate.name|get_initials }}</div>
+                <h5 class="mt-3 mb-1">{{ assessment.candidate.name }}</h5>
+                <p class="text-secondary">{{ assessment.candidate.position }}</p>
+                <div class="report-score-circle {{ 'pass' if assessment.result == 'Pass' else 'fail' }}">
+                    <span class="report-score-value">{{ '%d'|format(assessment.score) if assessment.score is not none else '-' }}</span>
+                    <span class="report-score-total">/ {{ '%d'|format(assessment.max_score) }}</span>
+                </div>
+                <div class="mt-2">
+                    {% set r_map = {'Pass':'badge-completed','Fail':'badge-rejected','Pending':'badge-review'} %}
+                    <span class="badge-custom {{ r_map.get(assessment.result,'badge-review') }}" style="font-size:14px;padding:6px 20px;">{{ assessment.result }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card-dashboard">
+            <div class="card-header-custom"><h5><i class="bi bi-bar-chart-fill me-2" style="color:var(--primary-blue)"></i> Score Breakdown</h5></div>
+            <div class="card-body-custom">
+                {% set sections = [
+                    {'name': 'Technical Knowledge', 'score': assessment.technical_score},
+                    {'name': 'Problem Solving', 'score': assessment.problem_solving},
+                    {'name': 'Coding', 'score': assessment.coding_score},
+                    {'name': 'Accuracy', 'score': assessment.accuracy}
+                ] %}
+                {% for s in sections %}
+                {% if s.score is not none %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold small">{{ s.name }}</span>
+                        <span class="fw-semibold small">{{ '%d'|format(s.score) }}/100</span>
+                    </div>
+                    <div class="progress" style="height:8px;">
+                        <div class="progress-bar {{ 'bg-success' if s.score >= 80 else 'bg-warning' if s.score >= 60 else 'bg-danger' }}" style="width:{{ s.score }}%;border-radius:4px;"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card-dashboard mt-3">
+            <div class="card-header-custom"><h5><i class="bi bi-info-circle me-2" style="color:var(--primary-blue)"></i> Assessment Details</h5></div>
+            <div class="card-body-custom">
+                <div class="row g-3">
+                    <div class="col-sm-6"><label class="text-secondary small">Assessment Name</label><p class="fw-semibold">{{ assessment.name }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Type</label><p class="fw-semibold">{{ assessment.type }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Overall Score</label><p class="fw-semibold">{{ '%d'|format(assessment.score) if assessment.score is not none else '-' }}/{{ '%d'|format(assessment.max_score) }}</p></div>
+                    <div class="col-sm-6"><label class="text-secondary small">Status</label><p>{% set s_map = {'Completed':'badge-completed','Pending':'badge-review','In Progress':'badge-interview'} %}<span class="badge-custom {{ s_map.get(assessment.status,'badge-review') }}">{{ assessment.status }}</span></p></div>
+                    <div class="col-12">
+                        <a href="{{ url_for('candidate_detail', id=assessment.candidate.id) }}" class="btn btn-outline-custom"><i class="bi bi-person"></i> View Candidate Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
