@@ -54,6 +54,10 @@
         {% if 'coding_sandbox' in permissions %}
         <a href="{{ url_for('coding_sandbox') }}" class="nav-item {% if active_page == 'coding_sandbox' %}active{% endif %}">
             <i class="bi bi-code-slash"></i><span>Coding Sandbox</span></a>
+        {% if current_user.role not in ('Candidate',) %}
+        <a href="{{ url_for('sandbox_submissions') }}" class="nav-item {% if active_page == 'sandbox_submissions' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i><span>Candidate Submissions</span></a>
+        {% endif %}
         {% endif %}
     </nav>
     {% endif %}

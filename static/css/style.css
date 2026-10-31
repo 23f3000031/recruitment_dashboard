@@ -688,3 +688,11 @@ a { text-decoration: none; color: inherit; }
     .stat-icon { width: 36px; height: 36px; font-size: 16px; }
     .stat-value { font-size: 20px; }
 }
+/* ---- Coding Sandbox ---- */
+.sandbox-editor .code-content { max-height: 430px; overflow: auto; }
+.sandbox-editor .code-lines { overflow: hidden; }
+.sandbox-code:focus { outline: none; }
+.sandbox-output { max-height: 240px; overflow: auto; }
+.result-badge.pending { background: #6b7280; color: #fff; }
+#sandbox-history .list-group-item { border-left: 0; border-right: 0; }
+#sandbox-lines span { display: block; }

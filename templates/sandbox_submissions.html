@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Candidate Submissions - RecruitPro{% endblock %}
+{% block content %}
+
+{% set lang_label = {'python': 'Python', 'javascript': 'JavaScript', 'java': 'Java', 'c++': 'C++'} %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <h2>Candidate Submissions</h2>
+        <p>Review every solution submitted in the Coding Sandbox.</p>
+    </div>
+    <a href="{{ url_for('coding_sandbox') }}" class="btn btn-outline-custom">
+        <i class="bi bi-code-slash"></i> Open Sandbox
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-send-check-fill"></i></div>
+            <div class="stat-label">Total Submissions</div>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-label">Average Score</div>
+            <div class="stat-value">{{ stats.avg_score }}%</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-label">Candidates</div>
+            <div class="stat-value">{{ stats.users }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-trophy-fill"></i></div>
+            <div class="stat-label">Candidates Solved</div>
+            <div class="stat-value">{{ stats.solved }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-dashboard mb-4">
+    <div class="card-body-custom">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search candidate or email..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="problem_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Problems</option>
+                    {% for p in problems %}
+                    <option value="{{ p.id }}" {{ 'selected' if problem_id == p.id }}>{{ p.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Results</option>
+                    <option value="passed" {{ 'selected' if status_filter == 'passed' }}>Passed</option>
+                    <option value="failed" {{ 'selected' if status_filter == 'failed' }}>Failed</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+                <a href="{{ url_for('sandbox_submissions') }}" class="btn btn-outline-custom"><i class="bi bi-x"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card-dashboard">
+    <div class="card-header-custom">
+        <h5><i class="bi bi-code-square me-2" style="color:var(--primary-blue)"></i> Submissions</h5>
+        <span class="small text-secondary">{{ pagination.total }} result(s)</span>
+    </div>
+    <div class="card-body-custom p-0">
+        <div class="table-responsive-custom">
+            <table class="table table-recruitment">
+                <thead>
+                <tr>
+                    <th>Candidate</th><th>Problem</th><th>Language</th><th>Score</th>
+                    <th>Tests</th><th>Time</th><th>Submitted</th><th style="width:60px;"></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for s in submissions %}
+                    <tr>
+                        <td>
+                            <div class="candidate-cell">
+                                <span class="candidate-avatar blue">{{ (s.user.name if s.user else 'Unknown')|get_initials }}</span>
+                                <span>
+                                    <span class="candidate-name d-block">{{ s.user.name if s.user else 'Unknown user' }}</span>
+                                    <span class="text-secondary small">{{ s.user.email if s.user else '-' }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>{{ s.problem.title if s.problem else 'Scratch pad' }}</td>
+                        <td>{{ lang_label.get(s.language, s.language) }}</td>
+                        <td>
+                            <span class="badge-custom {{ 'badge-completed' if s.score == 100 else 'badge-review' if s.score >= 60 else 'badge-rejected' }}">{{ s.score }}%</span>
+                        </td>
+                        <td>{{ s.passed }}/{{ s.total }}</td>
+                        <td>
+                            {% if s.duration_seconds %}
+                            {{ s.duration_seconds // 60 }}m {{ s.duration_seconds % 60 }}s
+                            {% else %}-{% endif %}
+                        </td>
+                        <td class="small text-secondary">{{ s.created_at.strftime('%d %b %Y, %H:%M') if s.created_at else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('sandbox_submission_detail', execution_id=s.id) }}" class="btn btn-sm btn-outline-secondary" title="View submission">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center py-4 text-secondary">No submissions found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="card-footer-custom">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                <a class="page-link" href="{{ url_for('sandbox_submissions', page=pagination.prev_num, problem_id=problem_id, status=status_filter, search=search) }}">Previous</a>
+            </li>
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                <li class="page-item {{ 'active' if p == pagination.page }}">
+                    <a class="page-link" href="{{ url_for('sandbox_submissions', page=p, problem_id=problem_id, status=status_filter, search=search) }}">{{ p }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                <a class="page-link" href="{{ url_for('sandbox_submissions', page=pagination.next_num, problem_id=problem_id, status=status_filter, search=search) }}">Next</a>
+            </li>
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

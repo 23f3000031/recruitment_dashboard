@@ -1,15 +1,30 @@
+import os
+import sys
+
+# The bundled virtualenv was created with an older Python build; its
+# site-packages still work, so make them importable for `python app.py`.
+_basedir = os.path.abspath(os.path.dirname(__file__))
+_venv_site = os.path.join(_basedir, 'venv', 'Lib', 'site-packages')
+if os.path.isdir(_venv_site) and _venv_site not in sys.path:
+    sys.path.insert(0, _venv_site)
+
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from datetime import datetime, date, timedelta
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, text
 import csv
 import io
-import os
+import json
 import calendar as cal_module
 
-from models import db, User, Candidate, VCTRecord, Interview, Assessment, Document, Notification, TimelineEvent, Job, CodeExecution
+from models import (db, User, Candidate, VCTRecord, Interview, Assessment,
+                    Document, Notification, TimelineEvent, Job, CodeProblem,
+                    CodeExecution)
+from sandbox_content import PROBLEMS
+from sandbox_runner import (run_source, run_test_cases, RUNNABLE_LANGUAGES,
+                            MAX_CODE_LENGTH)
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = _basedir
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'recruitpro-secret-key-2024'
@@ -541,80 +556,391 @@ def assessment_report(id):
     return render_template('assessment_report.html', assessment=a, active_page='assessments')
 
 
-# ================= CODING SANDBOX (static demo + server-side save) =================
+# ================= CODING SANDBOX =================
+_sandbox_ready = False
+MAX_OUTPUT_FOR_DB = 12000
+
+
+def ensure_sandbox_setup():
+    """Create/upgrade sandbox tables and load the built-in problem bank once."""
+    global _sandbox_ready
+    if _sandbox_ready:
+        return
+    with app.app_context():
+        db.create_all()
+        try:
+            existing_cols = {row[1] for row in db.session.execute(
+                text('PRAGMA table_info(code_executions)')).fetchall()}
+        except Exception:
+            existing_cols = set()
+
+        alterations = {
+            'problem_id': 'INTEGER',
+            'passed': 'INTEGER DEFAULT 0',
+            'total': 'INTEGER DEFAULT 0',
+            'score': 'INTEGER DEFAULT 0',
+            'is_submission': 'BOOLEAN DEFAULT 0',
+            'duration_seconds': 'INTEGER DEFAULT 0',
+            'details': 'TEXT',
+        }
+        for column, ddl in alterations.items():
+            if column in existing_cols:
+                continue
+            try:
+                db.session.execute(text(
+                    'ALTER TABLE code_executions ADD COLUMN %s %s' % (column, ddl)))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        for data in PROBLEMS:
+            row = CodeProblem.query.filter_by(slug=data['slug']).first()
+            if row is None:
+                row = CodeProblem(slug=data['slug'])
+                db.session.add(row)
+            row.title = data['title']
+            row.difficulty = data['difficulty']
+            row.category = data['category']
+            row.description = data['description']
+            row.starter_code = data['starter_code']
+            row.starter_code_js = data.get('starter_code_js', '')
+            row.solution_code = data['solution_code']
+            row.solution_code_js = data.get('solution_code_js', '')
+            row.hints = json.dumps(data.get('hints', []))
+            row.test_cases = json.dumps(data.get('test_cases', []))
+            row.function_name = data['function_name']
+            row.function_name_js = data.get('function_name_js', '')
+            row.time_limit_minutes = data.get('time_limit_minutes', 30)
+            row.is_active = True
+        db.session.commit()
+    _sandbox_ready = True
+
+
+def _problem_payload(problem, attempts=0, best=0):
+    return {
+        'id': problem.id,
+        'slug': problem.slug,
+        'title': problem.title,
+        'function_name': problem.function_name,
+        'function_name_js': problem.function_name_js,
+        'difficulty': problem.difficulty,
+        'time_limit_minutes': problem.time_limit_minutes or 30,
+        'attempts': attempts,
+        'best': best or 0,
+        'starters': {
+            'python': problem.starter_code or '',
+            'javascript': problem.starter_code_js or '',
+            'java': '// Java execution is not available in this local demo.\n',
+            'c++': '// C++ execution is not available in this local demo.\n',
+        },
+        'tests': json.loads(problem.test_cases or '[]'),
+    }
+
+
+def _serialize_execution(row):
+    title = row.problem.title if row.problem else 'Scratch pad'
+    return {
+        'id': row.id,
+        'language': row.language,
+        'status': row.status,
+        'created_at': row.created_at.strftime('%d %b %H:%M') if row.created_at else '',
+        'code_preview': (row.code or '')[:80],
+        'problem_id': row.problem_id,
+        'problem_title': title,
+        'problem_slug': row.problem.slug if row.problem else None,
+        'is_submission': bool(row.is_submission),
+        'score': row.score or 0,
+        'passed': row.passed or 0,
+        'total': row.total or 0,
+    }
+
+
 @app.route('/coding-sandbox')
 @login_required
 def coding_sandbox():
-    return render_template('coding_sandbox.html', active_page='coding_sandbox')
+    ensure_sandbox_setup()
+    problems = CodeProblem.query.filter_by(is_active=True).order_by(CodeProblem.id).all()
+    selected_slug = request.args.get('problem', type=str)
+    problem = next((p for p in problems if p.slug == selected_slug), None)
+    if problem is None and problems:
+        problem = problems[0]
 
+    attempts = 0
+    best_score = 0
+    hints = []
+    if problem is not None:
+        attempts = CodeExecution.query.filter_by(
+            user_id=current_user.id, problem_id=problem.id,
+            is_submission=True).count()
+        best_score = db.session.query(func.max(CodeExecution.score)).filter(
+            CodeExecution.user_id == current_user.id,
+            CodeExecution.problem_id == problem.id,
+            CodeExecution.is_submission.is_(True)).scalar() or 0
+        try:
+            hints = json.loads(problem.hints or '[]')
+        except ValueError:
+            hints = []
 
-DEMO_CODE = """def two_sum(nums, target):
-    seen = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in seen:
-            return [seen[complement], i]
-        seen[num] = i
-    return []
-
-# Test
-nums = [2, 7, 11, 15]
-target = 9
-print(two_sum(nums, target))"""
-
-
-def _demo_output(code, language):
-    """Safe demo evaluation — no exec(), just checks the classic Two Sum answer."""
-    text = (code or '')
-    if 'two_sum' in text and '[2, 7, 11, 15]' in text.replace('[2,7,11,15]', '[2, 7, 11, 15]'):
-        return '[0, 1]'
-    if 'two_sum' in text:
-        return '[0, 1]'
-    return 'Code saved. Demo output: [0, 1]'
+    payload = _problem_payload(problem, attempts, best_score) if problem else None
+    return render_template(
+        'coding_sandbox.html',
+        problems=problems,
+        problem=problem,
+        problem_data=payload,
+        hints=hints,
+        attempts=attempts,
+        best_score=best_score,
+        active_page='coding_sandbox',
+    )
 
 
 @app.route('/api/sandbox/execute', methods=['POST'])
 @login_required
 def sandbox_execute():
+    ensure_sandbox_setup()
     data = request.get_json(silent=True) or {}
-    code = data.get('code', '') or ''
+    code = data.get('code') or ''
+
+    if not code.strip():
+        return jsonify({'success': False, 'output': 'Write some code before running it.'}), 400
+    if len(code) > MAX_CODE_LENGTH:
+        return jsonify({'success': False,
+                        'output': 'Code is too long (max %s characters).' % MAX_CODE_LENGTH}), 400
+
     language = (data.get('language') or 'python').lower()
-    if language not in ('python', 'java', 'c++', 'javascript'):
-        language = 'python'
-    if len(code) > 20000:
-        return jsonify({'success': False, 'output': 'Code too long (max 20000 chars).'}), 400
-    output = _demo_output(code, language)
+    if language in ('js', 'node'):
+        language = 'javascript'
+    if language not in RUNNABLE_LANGUAGES:
+        return jsonify({
+            'success': False,
+            'output': 'Only Python and JavaScript can be executed in this local demo. '
+                      'Switch the language and try again.',
+        }), 400
+
+    mode = data.get('mode') if data.get('mode') in ('run', 'submit') else 'run'
+    problem = None
+    if data.get('problem_id'):
+        try:
+            problem = CodeProblem.query.get(int(data.get('problem_id')))
+        except (TypeError, ValueError):
+            problem = None
+    if mode == 'submit' and problem is None:
+        return jsonify({'success': False, 'output': 'Select a problem before submitting.'}), 400
+
     try:
-        ex = CodeExecution(user_id=current_user.id, code=code, language=language,
-                           output=output, status='success')
-        db.session.add(ex)
+        duration = max(0, min(int(data.get('duration_seconds') or 0), 86400))
+    except (TypeError, ValueError):
+        duration = 0
+
+    results = []
+    passed = total = score = 0
+    try:
+        if mode == 'submit':
+            cases = json.loads(problem.test_cases or '[]')
+            status, results, output = run_test_cases(
+                language, code, cases, problem.function_name, problem.function_name_js)
+            passed = sum(1 for r in results if r.get('ok'))
+            total = len(results)
+            score = int(round(passed * 100.0 / total)) if total else 0
+        else:
+            status, output = run_source(language, code)
+    except Exception as exc:
+        status, output = 'error', 'Runner error: %s' % exc
+
+    success = (bool(total) and passed == total) if mode == 'submit' else (status == 'success')
+
+    record = CodeExecution(
+        user_id=current_user.id,
+        problem_id=problem.id if problem else None,
+        code=code,
+        language=language,
+        output=(output or '')[:MAX_OUTPUT_FOR_DB],
+        status='passed' if (mode == 'submit' and success) else (
+            'failed' if mode == 'submit' else ('success' if success else status)),
+        passed=passed,
+        total=total,
+        score=score,
+        is_submission=(mode == 'submit'),
+        duration_seconds=duration,
+        details=json.dumps(results) if mode == 'submit' else None,
+    )
+    try:
+        db.session.add(record)
         db.session.commit()
-        eid = ex.id
+        execution_id = record.id
     except Exception:
         db.session.rollback()
-        eid = None
-    return jsonify({'success': True, 'output': output, 'status': 'success',
-                    'language': language, 'execution_id': eid})
+        execution_id = None
+
+    attempts = 0
+    if problem is not None and mode == 'submit':
+        attempts = CodeExecution.query.filter_by(
+            user_id=current_user.id, problem_id=problem.id,
+            is_submission=True).count()
+
+    return jsonify({
+        'success': bool(success),
+        'status': status,
+        'output': (output or '')[:MAX_OUTPUT_FOR_DB],
+        'results': results,
+        'passed': passed,
+        'total': total,
+        'score': score,
+        'language': language,
+        'mode': mode,
+        'execution_id': execution_id,
+        'attempts': attempts,
+        'duration_seconds': duration,
+    })
 
 
 @app.route('/api/sandbox/history')
 @login_required
 def sandbox_history():
-    rows = (CodeExecution.query.filter_by(user_id=current_user.id)
-            .order_by(CodeExecution.created_at.desc()).limit(10).all())
-    return jsonify([{'id': r.id, 'language': r.language, 'status': r.status,
-                     'created_at': r.created_at.strftime('%d %b %H:%M') if r.created_at else '',
-                     'code_preview': (r.code or '')[:80]} for r in rows])
+    ensure_sandbox_setup()
+    problem_id = request.args.get('problem_id', type=int)
+    query = CodeExecution.query.filter_by(user_id=current_user.id)
+    if problem_id:
+        query = query.filter_by(problem_id=problem_id)
+    rows = query.order_by(CodeExecution.created_at.desc()).limit(20).all()
+    return jsonify([_serialize_execution(row) for row in rows])
 
 
 @app.route('/api/sandbox/load/<int:execution_id>')
 @login_required
 def sandbox_load(execution_id):
+    ensure_sandbox_setup()
     ex = CodeExecution.query.get_or_404(execution_id)
     if ex.user_id != current_user.id and not is_admin():
         return jsonify({'error': 'Unauthorized'}), 403
-    return jsonify({'code': ex.code, 'language': ex.language,
-                    'status': ex.status, 'output': ex.output})
+    details = []
+    if ex.details:
+        try:
+            details = json.loads(ex.details)
+        except ValueError:
+            details = []
+    return jsonify({
+        'code': ex.code,
+        'language': ex.language,
+        'status': ex.status,
+        'output': ex.output,
+        'problem_id': ex.problem_id,
+        'problem_title': ex.problem.title if ex.problem else 'Scratch pad',
+        'problem_slug': ex.problem.slug if ex.problem else None,
+        'is_submission': bool(ex.is_submission),
+        'score': ex.score or 0,
+        'passed': ex.passed or 0,
+        'total': ex.total or 0,
+        'details': details,
+    })
+
+
+@app.route('/api/sandbox/solution/<int:problem_id>')
+@login_required
+def sandbox_solution(problem_id):
+    ensure_sandbox_setup()
+    problem = CodeProblem.query.get_or_404(problem_id)
+    attempts = CodeExecution.query.filter_by(
+        user_id=current_user.id, problem_id=problem.id,
+        is_submission=True).count()
+    if attempts < 2 and not is_admin():
+        return jsonify({
+            'error': 'Submit at least 2 attempts to unlock the reference solution.',
+            'attempts': attempts,
+        }), 403
+    language = (request.args.get('language') or 'python').lower()
+    if language not in ('python', 'javascript'):
+        language = 'python'
+    code = problem.solution_code_js if language == 'javascript' else problem.solution_code
+    return jsonify({'code': code or '', 'language': language, 'attempts': attempts})
+
+
+@app.route('/sandbox/submissions')
+@login_required
+def sandbox_submissions():
+    blocked = staff_only()
+    if blocked:
+        return blocked
+    ensure_sandbox_setup()
+
+    problem_id = request.args.get('problem_id', type=int)
+    status_filter = (request.args.get('status') or '').strip()
+    search = (request.args.get('search') or '').strip()
+    page = request.args.get('page', 1, type=int)
+
+    query = CodeExecution.query.filter(CodeExecution.is_submission.is_(True))
+    if problem_id:
+        query = query.filter(CodeExecution.problem_id == problem_id)
+    if status_filter == 'passed':
+        query = query.filter(CodeExecution.score == 100)
+    elif status_filter == 'failed':
+        query = query.filter(CodeExecution.score < 100)
+    if search:
+        like = '%%%s%%' % search
+        query = query.join(User, CodeExecution.user_id == User.id).filter(
+            (User.name.ilike(like)) | (User.email.ilike(like)))
+
+    pagination = query.order_by(CodeExecution.created_at.desc()).paginate(
+        page=page, per_page=15, error_out=False)
+
+    base = CodeExecution.query.filter(CodeExecution.is_submission.is_(True))
+    total_submissions = base.count()
+    avg_score = db.session.query(func.avg(CodeExecution.score)).filter(
+        CodeExecution.is_submission.is_(True)).scalar()
+    unique_users = db.session.query(func.count(func.distinct(CodeExecution.user_id))).filter(
+        CodeExecution.is_submission.is_(True)).scalar()
+    solved = db.session.query(func.count(func.distinct(CodeExecution.user_id))).filter(
+        CodeExecution.is_submission.is_(True),
+        CodeExecution.score == 100).scalar() or 0
+
+    stats = {
+        'total': total_submissions,
+        'avg_score': int(round(avg_score)) if avg_score is not None else 0,
+        'users': unique_users or 0,
+        'solved': solved,
+    }
+    problems = CodeProblem.query.filter_by(is_active=True).order_by(CodeProblem.id).all()
+    return render_template(
+        'sandbox_submissions.html',
+        pagination=pagination,
+        submissions=pagination.items,
+        problems=problems,
+        problem_id=problem_id,
+        status_filter=status_filter,
+        search=search,
+        stats=stats,
+        active_page='sandbox_submissions',
+    )
+
+
+@app.route('/sandbox/submissions/<int:execution_id>')
+@login_required
+def sandbox_submission_detail(execution_id):
+    blocked = staff_only()
+    if blocked:
+        return blocked
+    ensure_sandbox_setup()
+    submission = CodeExecution.query.get_or_404(execution_id)
+    if not submission.is_submission:
+        flash('That run was not a submission.', 'warning')
+        return redirect(url_for('sandbox_submissions'))
+    details = []
+    if submission.details:
+        try:
+            details = json.loads(submission.details)
+        except ValueError:
+            details = []
+    candidate = None
+    if submission.user is not None:
+        candidate = Candidate.query.filter(
+            func.lower(Candidate.email) == func.lower(submission.user.email)).first()
+    return render_template(
+        'sandbox_submission_detail.html',
+        submission=submission,
+        details=details,
+        candidate=candidate,
+        active_page='sandbox_submissions',
+    )
 
 
 # ================= INTERVIEWS =================
@@ -1069,4 +1395,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         ensure_default_users()
+    ensure_sandbox_setup()
     app.run(debug=True, port=5000)

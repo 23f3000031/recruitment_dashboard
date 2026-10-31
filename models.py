@@ -148,15 +148,49 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
+class CodeProblem(db.Model):
+    __tablename__ = 'code_problems'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    slug = db.Column(db.String(150), unique=True, nullable=False)
+    difficulty = db.Column(db.String(20), default='Easy')
+    category = db.Column(db.String(60), default='Arrays')
+    description = db.Column(db.Text)
+    starter_code = db.Column(db.Text)
+    starter_code_js = db.Column(db.Text)
+    solution_code = db.Column(db.Text)
+    solution_code_js = db.Column(db.Text)
+    hints = db.Column(db.Text)          # JSON list of hint strings
+    test_cases = db.Column(db.Text)     # JSON list of {'args': [...], 'expected': ...}
+    function_name = db.Column(db.String(60))
+    function_name_js = db.Column(db.String(60))
+    time_limit_minutes = db.Column(db.Integer, default=30)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<CodeProblem {self.slug}>'
+
+
 class CodeExecution(db.Model):
     __tablename__ = 'code_executions'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    problem_id = db.Column(db.Integer, db.ForeignKey('code_problems.id'))
     code = db.Column(db.Text)
     language = db.Column(db.String(50), default='python')
     output = db.Column(db.Text)
     status = db.Column(db.String(20), default='success')
+    passed = db.Column(db.Integer, default=0)
+    total = db.Column(db.Integer, default=0)
+    score = db.Column(db.Integer, default=0)
+    is_submission = db.Column(db.Boolean, default=False)
+    duration_seconds = db.Column(db.Integer, default=0)
+    details = db.Column(db.Text)        # JSON list of per-test results
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', lazy=True)
+    problem = db.relationship('CodeProblem', lazy=True)
 
     def __repr__(self):
         return f'<CodeExecution {self.id}>'
