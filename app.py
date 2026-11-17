@@ -329,7 +329,7 @@ def candidates():
         q = q.filter_by(verification_status=status)
     if position:
         q = q.filter_by(position=position)
-    pagination = q.order_by(Candidate.applied_date.desc()).paginate(page=page, per_page=10, error_out=False)
+    pagination = q.order_by(Candidate.applied_date.desc(), Candidate.id.desc()).paginate(page=page, per_page=10, error_out=False)
     vstatuses = [r[0] for r in db.session.query(Candidate.verification_status).distinct().all() if r[0]]
     positions = [r[0] for r in db.session.query(Candidate.position).distinct().all() if r[0]]
     return render_template('candidates.html', candidates=pagination.items, pagination=pagination,
@@ -894,7 +894,7 @@ def sandbox_submissions():
         query = query.join(User, CodeExecution.user_id == User.id).filter(
             (User.name.ilike(like)) | (User.email.ilike(like)))
 
-    pagination = query.order_by(CodeExecution.created_at.desc()).paginate(
+    pagination = query.order_by(CodeExecution.created_at.desc(), CodeExecution.id.desc()).paginate(
         page=page, per_page=15, error_out=False)
 
     base = CodeExecution.query.filter(CodeExecution.is_submission.is_(True))
