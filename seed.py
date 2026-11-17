@@ -75,22 +75,26 @@ notifications_data = [
     {'type': 'interview', 'message': '12 candidates awaiting eligibility review', 'related_id': 0},
 ]
 
-def seed():
+def _get_or_create_user(name, email, role, avatar, password):
+    user = User.query.filter_by(email=email).first()
+    if user is not None:
+        return user
+    user = User(name=name, email=email, role=role, avatar=avatar)
+    user.set_password(password)
+    db.session.add(user)
+    return user
+
+
+def seed(fresh=True):
+    """Load demo data. With fresh=False the existing tables are kept intact."""
     with app.app_context():
-        db.drop_all()
+        if fresh:
+            db.drop_all()
         db.create_all()
 
-        admin = User(name='HR Admin', email='admin@recruitpro.com', role='Admin', avatar='HR')
-        admin.set_password('admin123')
-        db.session.add(admin)
-
-        recruiter = User(name='Rekha Sharma', email='recruiter@recruitpro.com', role='Recruiter', avatar='RS')
-        recruiter.set_password('recruiter123')
-        db.session.add(recruiter)
-
-        interviewer = User(name='Amit Kumar', email='interviewer@recruitpro.com', role='Interviewer', avatar='AK')
-        interviewer.set_password('interviewer123')
-        db.session.add(interviewer)
+        _get_or_create_user('HR Admin', 'admin@recruitpro.com', 'Admin', 'HR', 'admin123')
+        _get_or_create_user('Rekha Sharma', 'recruiter@recruitpro.com', 'Recruiter', 'RS', 'recruiter123')
+        _get_or_create_user('Amit Kumar', 'interviewer@recruitpro.com', 'Interviewer', 'AK', 'interviewer123')
 
         candidates = []
         for cd in candidates_data:

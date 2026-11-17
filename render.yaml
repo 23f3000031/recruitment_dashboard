@@ -1,3 +1,4 @@
+# Render blueprint for the RecruitPro recruitment dashboard (free plan).
 services:
   - type: web
     name: recruitment-dashboard

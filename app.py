@@ -1407,17 +1407,24 @@ def internal_error(e):
 
 def init_database():
     """Create tables, default users, demo data and the problem bank (idempotent)."""
+    needs_demo_data = False
     with app.app_context():
         db.create_all()
         ensure_default_users()
-        if Candidate.query.count() == 0:
-            try:
-                from seed import seed
-                seed()
-                app.logger.info('Demo data seeded.')
-            except Exception as exc:  # never block startup because of demo data
-                db.session.rollback()
-                app.logger.warning('Demo data seeding skipped: %s', exc)
+        needs_demo_data = Candidate.query.count() == 0
+        # Close the read transaction before seeding, otherwise the DDL/locks
+        # taken by seed() can deadlock against this open transaction (Postgres).
+        db.session.remove()
+
+    if needs_demo_data:
+        try:
+            from seed import seed
+            seed(fresh=False)
+            app.logger.info('Demo data seeded.')
+        except Exception as exc:  # never block startup because of demo data
+            db.session.rollback()
+            app.logger.warning('Demo data seeding skipped: %s', exc)
+
     ensure_sandbox_setup()
 
 
