@@ -11,7 +11,7 @@ if os.path.isdir(_venv_site) and _venv_site not in sys.path:
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from datetime import datetime, date, timedelta
-from sqlalchemy import func, extract, text
+from sqlalchemy import func, extract, text, inspect as sa_inspect
 import csv
 import io
 import json
@@ -26,10 +26,25 @@ from sandbox_runner import (run_source, run_test_cases, RUNNABLE_LANGUAGES,
 
 basedir = _basedir
 
+def _database_url():
+    """Prefer DATABASE_URL (Render/Neon Postgres) and fall back to local SQLite."""
+    url = os.environ.get('DATABASE_URL', '').strip()
+    if not url:
+        os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+        return 'sqlite:///' + os.path.join(basedir, 'instance', 'recruitment.db')
+    # Render/Heroku style "postgres://" URLs need the psycopg v3 driver name.
+    if url.startswith('postgres://'):
+        url = 'postgresql+psycopg://' + url[len('postgres://'):]
+    elif url.startswith('postgresql://'):
+        url = 'postgresql+psycopg://' + url[len('postgresql://'):]
+    return url
+
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'recruitpro-secret-key-2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'recruitment.db')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'recruitpro-secret-key-2024')
+app.config['SQLALCHEMY_DATABASE_URI'] = _database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True, 'pool_recycle': 280}
 
 db.init_app(app)
 
@@ -569,8 +584,7 @@ def ensure_sandbox_setup():
     with app.app_context():
         db.create_all()
         try:
-            existing_cols = {row[1] for row in db.session.execute(
-                text('PRAGMA table_info(code_executions)')).fetchall()}
+            existing_cols = {col['name'] for col in sa_inspect(db.engine).get_columns('code_executions')}
         except Exception:
             existing_cols = set()
 
@@ -1391,9 +1405,34 @@ def internal_error(e):
     return render_template('500.html'), 500
 
 
-if __name__ == '__main__':
+def init_database():
+    """Create tables, default users, demo data and the problem bank (idempotent)."""
     with app.app_context():
         db.create_all()
         ensure_default_users()
+        if Candidate.query.count() == 0:
+            try:
+                from seed import seed
+                seed()
+                app.logger.info('Demo data seeded.')
+            except Exception as exc:  # never block startup because of demo data
+                db.session.rollback()
+                app.logger.warning('Demo data seeding skipped: %s', exc)
     ensure_sandbox_setup()
-    app.run(debug=True, port=5000)
+
+
+_AUTO_INIT = os.environ.get('AUTO_INIT_DB', '1').lower() not in ('0', 'false', 'no')
+
+
+if __name__ == '__main__':
+    if _AUTO_INIT:
+        init_database()
+    else:
+        ensure_sandbox_setup()
+    app.run(debug=True, port=int(os.environ.get('PORT', 5000)))
+elif _AUTO_INIT:
+    # Under gunicorn (Render) the __main__ block never runs, so bootstrap here.
+    try:
+        init_database()
+    except Exception as exc:
+        app.logger.error('Database bootstrap failed: %s', exc)
